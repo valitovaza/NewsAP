@@ -1,4 +1,3 @@
-let ApiKey = "YOUR_KEY"
 enum ResponseStatus: String {
     case ok
     case error
