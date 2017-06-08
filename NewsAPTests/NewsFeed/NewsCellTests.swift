@@ -3,6 +3,7 @@ import XCTest
 class NewsCellTests: XCTestCase {
     
     let altTitle = "test Title"
+    let altUrl = "test Url"
     let altDate = "test Date"
     let altDescription = "test Description"
     let altAuthor = "test Author"
@@ -33,6 +34,7 @@ class NewsCellTests: XCTestCase {
     func testOutletsIsConnected() {
         XCTAssertNotNil(sut.nImage)
         XCTAssertNotNil(sut.nTitle)
+        XCTAssertNotNil(sut.nUrl)
         XCTAssertNotNil(sut.nDate)
         XCTAssertNotNil(sut.nDesc)
         XCTAssertNotNil(sut.nAuthor)
@@ -43,6 +45,14 @@ class NewsCellTests: XCTestCase {
         sut.nTitle = lblSpy
         sut.displayTitle(altTitle)
         tstLabelTextChanged(lblSpy, expectedText: altTitle)
+    }
+    
+    func testDisplayOriginalSourceChangesUrl() {
+        let txtSpy = TextViewSpy()
+        sut.nUrl = txtSpy
+        sut.displayOriginalSource(altUrl)
+        XCTAssertEqual(txtSpy.setTextWasInvoked, 1)
+        XCTAssertEqual(txtSpy.text, altUrl)
     }
     
     func testDisplayDateChangesDateLabelText() {
@@ -108,6 +118,14 @@ class NewsCellTests: XCTestCase {
         
         sut.displayImage(from: validUrlString)
         wait(for: [exp], timeout: 0.3)
+    }
+}
+class TextViewSpy: UITextView {
+    var setTextWasInvoked = 0
+    override var text: String? {
+        didSet {
+            setTextWasInvoked += 1
+        }
     }
 }
 class LabelSpy: UILabel {

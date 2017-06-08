@@ -52,11 +52,15 @@ class NewsPresenter: NewsPresenterProtocol, TableViewPresenter {
     }
     func present(cell: NewsCellProtocol, at index: Int) {
         let article = store.article(for: index)
+        configureCell(cell, with: article)
+    }
+    private func configureCell(_ cell: NewsCellProtocol, with article: Article) {
         cell.displayTitle(article.title)
         cell.displayDate(dateString(article: article))
         cell.displayDescription(article.desc)
         cell.displayAuthor(article.author)
         cell.displayImage(from: article.urlToImage)
+        cell.displayOriginalSource(article.url)
     }
     private func dateString(article: Article) -> String {
         let toStringFormatter = DateFormatter()

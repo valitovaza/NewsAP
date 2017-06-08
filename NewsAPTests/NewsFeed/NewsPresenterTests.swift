@@ -95,6 +95,7 @@ class NewsPresenterTests: XCTestCase {
         XCTAssertEqual(secondCell.savedDate, "7 May 2017  10:00 a.m.")
         XCTAssertEqual(cell.savedDesc, "desc1")
         XCTAssertEqual(cell.savedAuthor, "author1")
+        XCTAssertEqual(cell.savedSource, "url1")
     }
     
     func testPresentCellMustInvokeDisplayImageForUrl() {
@@ -135,6 +136,14 @@ extension NewsPresenterTests {
         func displayTitle(_ title: String) {
             displayTitleWasInvoked += 1
             savedTitle = title
+        }
+        
+        var displayOriginalSourceWasInvoked = 0
+        var savedSource: String?
+        func displayOriginalSource(_ source: String) {
+            displayOriginalSourceWasInvoked += 1
+            savedSource = source
+            
         }
         var displayDateWasInvoked = 0
         var savedDate: String?

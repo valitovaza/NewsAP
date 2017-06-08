@@ -19,7 +19,7 @@ class NewsRouter: NewsRouterProtocol {
     func openArticle(_ url: String) {
         if let articleUrl = URL(string: url) {
             viewController.present(SFSafariViewController(url: articleUrl,
-                                                          entersReaderIfAvailable: true),
+                                                          entersReaderIfAvailable: false),
                                    animated: true,
                                    completion: nil)
         }

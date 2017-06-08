@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12120" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="2Ro-53-YP8">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12121" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="2Ro-53-YP8">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12088"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
+        <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -79,11 +80,11 @@
                                 <rect key="frame" x="0.0" y="64" width="375" height="603"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="NewsCell" rowHeight="347" id="2sT-ap-Grr" customClass="NewsCell" customModule="NewsAP" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="28" width="375" height="347"/>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="NewsCell" rowHeight="384" id="2sT-ap-Grr" customClass="NewsCell" customModule="NewsAP" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="28" width="375" height="384"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="2sT-ap-Grr" id="cKE-ix-6z5">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="346.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="383.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="JtC-1Z-Qpv">
@@ -100,33 +101,46 @@
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="description" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hUF-ck-WCd">
-                                                    <rect key="frame" x="8" y="270.5" width="359" height="21"/>
+                                                    <rect key="frame" x="8" y="308" width="359" height="21"/>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="1000" text="publishedAt" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AN2-Hm-A0M">
-                                                    <rect key="frame" x="8" y="299.5" width="67.5" height="14.5"/>
+                                                    <rect key="frame" x="8" y="337" width="67.5" height="14.5"/>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="author" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VEf-oi-Dg7">
-                                                    <rect key="frame" x="8" y="322" width="359" height="16"/>
+                                                    <rect key="frame" x="8" y="359.5" width="359" height="16"/>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
+                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" text="http://newsurl.com" translatesAutoresizingMaskIntoConstraints="NO" id="CKL-WQ-kR6">
+                                                    <rect key="frame" x="0.0" y="270" width="367" height="30"/>
+                                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="30" id="2h4-UQ-s5F"/>
+                                                    </constraints>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                                    <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                                    <dataDetectorType key="dataDetectorTypes" link="YES"/>
+                                                </textView>
                                             </subviews>
                                             <constraints>
+                                                <constraint firstItem="CKL-WQ-kR6" firstAttribute="leadingMargin" secondItem="d9U-sS-lbN" secondAttribute="leading" id="454-VX-XQF"/>
                                                 <constraint firstItem="JtC-1Z-Qpv" firstAttribute="top" secondItem="cKE-ix-6z5" secondAttribute="topMargin" id="5ML-HS-8yj"/>
                                                 <constraint firstItem="d9U-sS-lbN" firstAttribute="trailing" secondItem="cKE-ix-6z5" secondAttribute="trailingMargin" id="7IU-r8-cLO"/>
                                                 <constraint firstItem="AN2-Hm-A0M" firstAttribute="leading" secondItem="cKE-ix-6z5" secondAttribute="leadingMargin" id="7YZ-Eg-Qan"/>
                                                 <constraint firstItem="d9U-sS-lbN" firstAttribute="top" secondItem="JtC-1Z-Qpv" secondAttribute="bottom" constant="8" symbolic="YES" id="8zV-ly-95t"/>
                                                 <constraint firstItem="AN2-Hm-A0M" firstAttribute="top" secondItem="hUF-ck-WCd" secondAttribute="bottom" constant="8" symbolic="YES" id="9oH-yk-z1b"/>
+                                                <constraint firstItem="CKL-WQ-kR6" firstAttribute="top" secondItem="d9U-sS-lbN" secondAttribute="bottom" constant="8" symbolic="YES" id="G4m-rv-BoD"/>
+                                                <constraint firstItem="hUF-ck-WCd" firstAttribute="top" secondItem="CKL-WQ-kR6" secondAttribute="bottom" constant="8" symbolic="YES" id="JFi-ZC-GXs"/>
+                                                <constraint firstItem="CKL-WQ-kR6" firstAttribute="trailing" secondItem="cKE-ix-6z5" secondAttribute="trailingMargin" id="MzJ-zM-ALZ"/>
                                                 <constraint firstAttribute="trailingMargin" secondItem="VEf-oi-Dg7" secondAttribute="trailing" id="NQm-Nc-Kw4"/>
                                                 <constraint firstItem="d9U-sS-lbN" firstAttribute="leading" secondItem="cKE-ix-6z5" secondAttribute="leadingMargin" id="OLa-Ml-Sib"/>
-                                                <constraint firstItem="hUF-ck-WCd" firstAttribute="top" secondItem="d9U-sS-lbN" secondAttribute="bottom" constant="8" symbolic="YES" id="RRJ-Yd-tv2"/>
                                                 <constraint firstItem="hUF-ck-WCd" firstAttribute="leading" secondItem="cKE-ix-6z5" secondAttribute="leadingMargin" id="f2P-Ux-9LZ"/>
                                                 <constraint firstItem="VEf-oi-Dg7" firstAttribute="top" secondItem="AN2-Hm-A0M" secondAttribute="bottom" constant="8" symbolic="YES" id="j3m-sq-WTy"/>
                                                 <constraint firstItem="hUF-ck-WCd" firstAttribute="trailing" secondItem="cKE-ix-6z5" secondAttribute="trailingMargin" id="nWk-Ol-4ca"/>
@@ -143,6 +157,7 @@
                                             <outlet property="nDesc" destination="hUF-ck-WCd" id="YeY-DV-oGr"/>
                                             <outlet property="nImage" destination="JtC-1Z-Qpv" id="WVo-et-gwb"/>
                                             <outlet property="nTitle" destination="d9U-sS-lbN" id="v0W-5U-3DZ"/>
+                                            <outlet property="nUrl" destination="CKL-WQ-kR6" id="iJD-f5-MGU"/>
                                         </connections>
                                     </tableViewCell>
                                 </prototypes>
