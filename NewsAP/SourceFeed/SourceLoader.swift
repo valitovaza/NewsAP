@@ -43,9 +43,9 @@ class SourceLoader: SourceLoaderProtocol {
     private func handleResponse(_ data: Data?,
                                 completition: @escaping ([Source])->()) {
         task = nil
-        guard let responce = parse(data)
-            else {completition([]); return}
         DispatchQueue.main.async {
+            guard let responce = self.parse(data)
+                else {completition([]); return}
             completition(responce.sources)
         }
     }

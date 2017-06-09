@@ -30,8 +30,8 @@ class LoadingAnimator: LoadingAnimatorProtocol {
     }
     private func animate() {
         isAnimating = true
-        animationView.play()
         addSubview()
+        animationView.play()
     }
     private func addSubview() {
         let animation = animationView as! UIView

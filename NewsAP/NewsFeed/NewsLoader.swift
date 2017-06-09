@@ -38,9 +38,9 @@ class NewsLoader: NewsLoaderProtocol {
     }
     private func handleResponse(_ data: Data?, completition: @escaping ([Article])->()) {
         task = nil
-        guard let articleResponse = parse(data)
-            else {completition([]); return}
         DispatchQueue.main.async {
+            guard let articleResponse = self.parse(data)
+                else {completition([]); return}
             completition(articleResponse.articles)
         }
     }
