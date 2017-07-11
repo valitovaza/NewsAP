@@ -5,7 +5,8 @@ protocol SourceEventHandler {
     func selectCategory()
     func selectLanguage()
     func selectCountry()
-    func onCancel()
+    func onDone()
+    func switchSegment(_ segment: Int)
 }
 protocol SourceParametersSelectionHandler: class {
     func categorySelected(_ category: SourceCategory?)
@@ -29,7 +30,7 @@ protocol HasSourceSaver {
     var sourceHolder: SourceHolderProtocol { get }
 }
 protocol HasSourceDataProvider {
-    var dataSource: SourceDataProviderProtocol { get }
+    var dataSource: SourceDataProviderProtocol & SourceDataSaver { get }
 }
 protocol HasSourceParameterHolder {
     var parameterHolder: SourceParameterHolderProtocol { get set }
@@ -41,7 +42,7 @@ struct SourceInteractorDependency: HasSourceLoader, HasSourcePresenter, HasSourc
     let loader: SourceLoaderProtocol
     weak var presenter: SourcePresenterProtocol?
     let sourceHolder: SourceHolderProtocol
-    let dataSource: SourceDataProviderProtocol
+    let dataSource: SourceDataProviderProtocol & SourceDataSaver
     var parameterHolder: SourceParameterHolderProtocol
     let actionSheetPresenter: ActionSheetPresenterProtocol
 }
@@ -55,12 +56,22 @@ class SourceInteractor: SourceEventHandler, SourceParametersSelectionHandler {
     }
     func onDidLoad() {
         loadSources()
-        presentLoadingParameters()
-        presentCancelButtonIfNeed()
+        configureUI()
+        setSelectedSourcesToPresenter()
     }
-    private func presentCancelButtonIfNeed() {
-        if let _ = dependencies.sourceHolder.source {
-            dependencies.presenter?.showCancelButton()
+    private func configureUI() {
+        presentLoadingParameters()
+        dependencies.presenter?.showDoneButton()
+        configureDoneButton()
+    }
+    private func setSelectedSourcesToPresenter() {
+        dependencies.presenter?.setSelectedIds(dependencies.sourceHolder.sources?.map{$0.id} ?? [])
+    }
+    private func configureDoneButton() {
+        if let sources = dependencies.sourceHolder.sources, sources.count > 0 {
+            dependencies.presenter?.configureDoneButton(enabled: true)
+        }else{
+            dependencies.presenter?.configureDoneButton(enabled: false)
         }
     }
     private func presentLoadingParameters() {
@@ -134,15 +145,47 @@ class SourceInteractor: SourceEventHandler, SourceParametersSelectionHandler {
     
     func selectSource(at index: Int) {
         saveSelectedSource(at: index)
-        newsRefresher?.refresh()
-        dependencies.presenter?.close()
+        setSelectedSourcesToPresenter()
+        configureDoneButton()
+        changeCell(at: index)
+    }
+    private func changeDataSource() {
+        if selectedSegment != 0 {
+            setSelectedToDataSource()
+        }
+    }
+    private func changeCell(at index: Int) {
+        if selectedSegment == 0 {
+            dependencies.presenter?.reloadCell(at: index)
+        }else{
+            dependencies.presenter?.removeCell(at: index)
+        }
     }
     private func saveSelectedSource(at index: Int) {
         let source = dependencies.dataSource.source(at: index)
-        dependencies.sourceHolder.save(source: source.id)
+        dependencies.sourceHolder.select(source: source)
+        changeDataSource()
     }
     
-    func onCancel() {
+    func onDone() {
         dependencies.presenter?.close()
+        newsRefresher?.refresh()
+    }
+    
+    private var selectedSegment: Int = 0
+    func switchSegment(_ segment: Int) {
+        selectedSegment = segment
+        configureDataSource(with: segment)
+        dependencies.presenter?.configureUI(for: segment)
+    }
+    private func configureDataSource(with segment: Int) {
+        if segment == 0 {
+            dependencies.dataSource.removeSelectedSources()
+        }else{
+            setSelectedToDataSource()
+        }
+    }
+    private func setSelectedToDataSource() {
+        dependencies.dataSource.setSelectedSources(dependencies.sourceHolder.sources ?? [])
     }
 }

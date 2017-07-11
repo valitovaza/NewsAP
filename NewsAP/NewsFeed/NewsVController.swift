@@ -45,7 +45,7 @@ extension NewsVController: PresenterView {
         }
     }
     func resetTableContentOffset() {
-        tbl.scrollToRow(at: IndexPath(row: NSNotFound, section: 0), at: .top, animated: true)
+        tbl.scrollToRow(at: IndexPath(row: NSNotFound, section: 0), at: .top, animated: false)
     }
 }
 extension NewsVController {
@@ -65,6 +65,7 @@ extension NewsVController {
         navigationItem.rightBarButtonItem?.accessibilityLabel = AccessibilityStrings.SelectSource.rawValue
     }
     private func configureTable() {
+        tbl.isHidden = true
         tbl.delegate = self
         tbl.estimatedRowHeight = NewsVController.sctimatedRowHeight
         tbl.rowHeight = UITableViewAutomaticDimension

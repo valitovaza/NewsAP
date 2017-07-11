@@ -42,3 +42,15 @@ extension Source {
         self.sortBysAvailable = sortBysAvailable.flatMap{SortType(rawValue: $0)}
     }
 }
+extension Source {
+    func encode() -> [String: Any] {
+        return [Source.idKey: id,
+                Source.nameKey: name,
+                Source.descriptionKey: desc,
+                Source.urlKey: url,
+                Source.categoryKey: category.rawValue,
+                Source.languageKey: language.rawValue,
+                Source.countryKey: country.rawValue,
+                Source.sortBysAvailableKey: sortBysAvailable.map{$0.rawValue}]
+    }
+}

@@ -48,4 +48,38 @@ class SourceDataProviderTests: XCTestCase {
         XCTAssertEqual(sut.source(at: 0).id, testSource.id)
         XCTAssertEqual(sut.source(at: 1).id, secondTestSource.id)
     }
+    
+    func testSetSelectedSourceMustChangeContent() {
+        sut.save([testSource, secondTestSource])
+        sut.setSelectedSources([testSource])
+        XCTAssertEqual(sut.count, 1)
+        XCTAssertEqual(sut.source(at: 0).id, testSource.id)
+    }
+    
+    func testRemoveSelectedSourcesMustReturnAllSources() {
+        sut.save([testSource, secondTestSource])
+        sut.setSelectedSources([testSource])
+        sut.removeSelectedSources()
+        XCTAssertEqual(sut.count, 2)
+    }
+    
+    func testSetSelectedSourcesMustWorkMultipleTimes() {
+        sut.save([testSource, secondTestSource])
+        sut.setSelectedSources([testSource])
+        sut.setSelectedSources([secondTestSource])
+        XCTAssertEqual(sut.count, 1)
+    }
+    
+    func testSetSelectedSourcesMustWorkAfterSave() {
+        sut.setSelectedSources([testSource])
+        sut.save([testSource, secondTestSource])
+        XCTAssertEqual(sut.count, 1)
+    }
+    
+    func testSelectedSourceMustNotWorkAfterRemoving() {
+        sut.setSelectedSources([testSource])
+        sut.removeSelectedSources()
+        sut.save([testSource, secondTestSource])
+        XCTAssertEqual(sut.count, 2)
+    }
 }

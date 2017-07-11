@@ -76,7 +76,7 @@
                                     <constraint firstItem="ZfO-WZ-vLe" firstAttribute="centerX" secondItem="xbe-ZE-U1A" secondAttribute="centerX" id="pFV-cg-9kE"/>
                                 </constraints>
                             </view>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="374" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="YZ2-GY-n11">
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" allowsSelection="NO" rowHeight="374" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="YZ2-GY-n11">
                                 <rect key="frame" x="0.0" y="64" width="375" height="603"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <prototypes>
@@ -216,7 +216,7 @@
             </objects>
             <point key="canvasLocation" x="1154" y="188"/>
         </scene>
-        <!--Sources-->
+        <!--SourceV Controller-->
         <scene sceneID="D8h-qP-y9S">
             <objects>
                 <viewController storyboardIdentifier="SourceVController" id="O56-7R-BOP" customClass="SourceVController" customModule="NewsAP" customModuleProvider="target" sceneMemberID="viewController">
@@ -274,8 +274,11 @@
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="86.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="1000" verticalHuggingPriority="251" image="deselectedIcon" translatesAutoresizingMaskIntoConstraints="NO" id="0HG-dt-Nie">
+                                                    <rect key="frame" x="8" y="7.5" width="22" height="22"/>
+                                                </imageView>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="900" verticalHuggingPriority="900" horizontalCompressionResistancePriority="800" verticalCompressionResistancePriority="1000" text="Name" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pfa-k2-74v">
-                                                    <rect key="frame" x="8" y="8" width="359" height="21"/>
+                                                    <rect key="frame" x="38" y="8" width="329" height="21"/>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
@@ -298,9 +301,11 @@
                                                 <constraint firstItem="6kE-XK-8J0" firstAttribute="top" secondItem="UQk-8H-BWc" secondAttribute="bottom" constant="8" symbolic="YES" id="7Cx-jx-A6b"/>
                                                 <constraint firstAttribute="trailingMargin" secondItem="pfa-k2-74v" secondAttribute="trailing" id="9LJ-oW-3Ri"/>
                                                 <constraint firstItem="UQk-8H-BWc" firstAttribute="leading" secondItem="WbJ-AY-pDJ" secondAttribute="leadingMargin" id="Amy-Pq-oih"/>
-                                                <constraint firstItem="pfa-k2-74v" firstAttribute="leading" secondItem="WbJ-AY-pDJ" secondAttribute="leadingMargin" id="C8g-Sd-WQ3"/>
                                                 <constraint firstItem="6kE-XK-8J0" firstAttribute="leading" secondItem="WbJ-AY-pDJ" secondAttribute="leadingMargin" id="Dtn-EX-U5F"/>
+                                                <constraint firstItem="0HG-dt-Nie" firstAttribute="leading" secondItem="WbJ-AY-pDJ" secondAttribute="leadingMargin" id="GC0-Gp-sBI"/>
+                                                <constraint firstItem="0HG-dt-Nie" firstAttribute="centerY" secondItem="pfa-k2-74v" secondAttribute="centerY" id="bBD-lF-wNP"/>
                                                 <constraint firstItem="UQk-8H-BWc" firstAttribute="top" secondItem="pfa-k2-74v" secondAttribute="bottom" constant="8" symbolic="YES" id="gp8-rk-wde"/>
+                                                <constraint firstItem="pfa-k2-74v" firstAttribute="leading" secondItem="0HG-dt-Nie" secondAttribute="trailing" constant="8" symbolic="YES" id="kyj-Vf-sUK"/>
                                                 <constraint firstItem="pfa-k2-74v" firstAttribute="top" secondItem="WbJ-AY-pDJ" secondAttribute="topMargin" id="nsE-6E-0hp"/>
                                                 <constraint firstAttribute="trailingMargin" secondItem="UQk-8H-BWc" secondAttribute="trailing" id="yyZ-CN-a6J"/>
                                             </constraints>
@@ -310,6 +315,7 @@
                                             <outlet property="sCategory" destination="6kE-XK-8J0" id="Cae-bG-698"/>
                                             <outlet property="sDesc" destination="UQk-8H-BWc" id="ZwW-df-f2k"/>
                                             <outlet property="sName" destination="pfa-k2-74v" id="oQe-z9-zlD"/>
+                                            <outlet property="sSelectIcon" destination="0HG-dt-Nie" id="SPD-t6-ie9"/>
                                         </connections>
                                     </tableViewCell>
                                 </prototypes>
@@ -317,6 +323,12 @@
                                     <outlet property="dataSource" destination="O56-7R-BOP" id="7Gk-9C-YKw"/>
                                 </connections>
                             </tableView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="You have no selected sources." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fmS-q2-fFd">
+                                <rect key="frame" x="16" y="330.5" width="343" height="26.5"/>
+                                <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
+                                <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cR1-Jr-Mkz">
                                 <rect key="frame" x="0.0" y="623" width="375" height="44"/>
                                 <items>
@@ -343,6 +355,9 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstItem="fmS-q2-fFd" firstAttribute="centerY" secondItem="zCX-J2-XgI" secondAttribute="centerY" id="4nQ-UU-gB7"/>
+                            <constraint firstItem="fmS-q2-fFd" firstAttribute="leading" secondItem="mMo-ex-j5G" secondAttribute="leadingMargin" id="9EX-EH-wns"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="fmS-q2-fFd" secondAttribute="trailing" id="AAA-wv-Pbu"/>
                             <constraint firstItem="zCX-J2-XgI" firstAttribute="leading" secondItem="mMo-ex-j5G" secondAttribute="leading" id="Cas-Ic-aVJ"/>
                             <constraint firstAttribute="trailing" secondItem="Ax6-xd-nSP" secondAttribute="trailing" id="Cqa-B1-gfW"/>
                             <constraint firstAttribute="trailing" secondItem="cR1-Jr-Mkz" secondAttribute="trailing" id="Ekt-fV-nMK"/>
@@ -356,22 +371,38 @@
                             <constraint firstItem="zCX-J2-XgI" firstAttribute="top" secondItem="PCZ-Ea-p1q" secondAttribute="bottom" id="uRX-mi-B8x"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Sources" id="JpR-TW-Jgi">
+                    <navigationItem key="navigationItem" id="JpR-TW-Jgi">
+                        <nil key="title"/>
                         <barButtonItem key="leftBarButtonItem" systemItem="refresh" id="e4d-g5-In3">
                             <connections>
                                 <action selector="refresh:" destination="O56-7R-BOP" id="QSF-Q8-khX"/>
                             </connections>
                         </barButtonItem>
+                        <segmentedControl key="titleView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="bar" selectedSegmentIndex="0" id="UUo-hn-GxY">
+                            <rect key="frame" x="102.5" y="7" width="170" height="30"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <segments>
+                                <segment title="Sources"/>
+                                <segment title="Selected"/>
+                            </segments>
+                            <connections>
+                                <action selector="topSegmentChanged:" destination="O56-7R-BOP" eventType="valueChanged" id="Fig-Hc-BcI"/>
+                            </connections>
+                        </segmentedControl>
                     </navigationItem>
                     <connections>
+                        <outlet property="bottomBar" destination="cR1-Jr-Mkz" id="tiy-os-E0B"/>
+                        <outlet property="bottomConstraint" destination="Gwx-Da-YZ5" id="qBU-2z-GaN"/>
                         <outlet property="categoryButton" destination="fXS-VO-YMq" id="m2P-J3-2oP"/>
                         <outlet property="countryButton" destination="udw-9t-kab" id="Ux3-36-3vV"/>
+                        <outlet property="emptySelectedSourcesLabel" destination="fmS-q2-fFd" id="yln-P7-gjv"/>
                         <outlet property="errView" destination="Ax6-xd-nSP" id="fXk-Rw-XgG"/>
                         <outlet property="errorIcon" destination="Q1j-dR-IM4" id="nI6-DQ-RDz"/>
                         <outlet property="errorText" destination="osv-gg-baf" id="LMN-Ev-gtW"/>
                         <outlet property="langButton" destination="URe-hG-ZX5" id="Klo-nN-iAr"/>
                         <outlet property="refreshButton" destination="LW5-ot-Q2x" id="4xg-7o-EgX"/>
                         <outlet property="tbl" destination="zCX-J2-XgI" id="gnq-4H-YwP"/>
+                        <outlet property="topSegment" destination="UUo-hn-GxY" id="Eyg-mT-05V"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="wU2-NO-vEK" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -380,6 +411,7 @@
         </scene>
     </scenes>
     <resources>
+        <image name="deselectedIcon" width="22" height="22"/>
         <image name="emptyIcon" width="16" height="16"/>
         <image name="options" width="18" height="18"/>
     </resources>

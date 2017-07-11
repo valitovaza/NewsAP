@@ -6,9 +6,13 @@ class SourceVControllerTests: XCTestCase {
     var configurator: ConfiguratorSpy!
     var eventHandler: EventHandlerSpy!
     var cellPresenter: CellPresenterSpy!
+    var tableViewMock: TableViewMock!
+    
+    let indexPath = IndexPath(row: 5, section: 63)
     
     override func setUp() {
         super.setUp()
+        tableViewMock = TableViewMock()
         createSut()
         configureSut()
     }
@@ -30,6 +34,9 @@ class SourceVControllerTests: XCTestCase {
     override func tearDown() {
         sut = nil
         configurator = nil
+        eventHandler = nil
+        cellPresenter = nil
+        tableViewMock = nil
         super.tearDown()
     }
     
@@ -50,12 +57,18 @@ class SourceVControllerTests: XCTestCase {
         XCTAssertNotNil(sut.categoryButton)
         XCTAssertNotNil(sut.langButton)
         XCTAssertNotNil(sut.countryButton)
+        XCTAssertNotNil(sut.emptySelectedSourcesLabel)
     }
     
     func testRefreshButtonActionIsConnected() {
         XCTAssertEqual(sut.refreshButton.actions(forTarget: sut,
                                                  forControlEvent: .touchUpInside)?.first,
                        "refresh:")
+    }
+    
+    func testSegmentActionIsConnected() {
+        XCTAssertEqual(sut.topSegment.actions(forTarget: sut,
+                                                 forControlEvent: .valueChanged)?.first, "topSegmentChanged:")
     }
     
     func testCategoryButtonActionIsConnected() {
@@ -110,6 +123,13 @@ class SourceVControllerTests: XCTestCase {
         XCTAssertEqual(sut.errorView as? UIView, view)
     }
     
+    func testEmptyLabel() {
+        XCTAssertEqual(sut.emptyLabel as? UILabel, sut.emptySelectedSourcesLabel)
+        let label = UILabel()
+        sut.emptyLabel = label
+        XCTAssertEqual(sut.emptyLabel as? UILabel, label)
+    }
+    
     func testNumberOfRowsInSectionMustBeFromCellPresenter() {
         XCTAssertEqual(sut.tableView(sut.tbl, numberOfRowsInSection: 0),
                        cellPresenter.count())
@@ -118,9 +138,6 @@ class SourceVControllerTests: XCTestCase {
     func testDataSourceConnected() {
         XCTAssertEqual(sut.tbl.dataSource as? UIViewController, sut)
     }
-    
-    let tableViewMock = TableViewMock()
-    let indexPath = IndexPath(row: 5, section: 63)
     
     func testDequeueMustInvokedInCellForRow() {
         XCTAssertEqual(sut.tableView(tableViewMock, cellForRowAt: indexPath),
@@ -191,23 +208,23 @@ class SourceVControllerTests: XCTestCase {
     }
     
     func testDisplayCancelMustCreateRightBarButtonItem() {
-        sut.displayCancel()
+        sut.displayDone()
         let cancelBtn = sut.navigationItem.rightBarButtonItem
         
         XCTAssertNotNil(cancelBtn)
         XCTAssertEqual(cancelBtn?.target as? UIViewController, sut)
-        XCTAssertEqual(cancelBtn?.action, #selector(sut.cancelAction(_:)))
+        XCTAssertEqual(cancelBtn?.action, #selector(sut.doneAction(_:)))
     }
     
     func testDisplayCancelMustSetAccessibilityLabel() {
-        sut.displayCancel()
+        sut.displayDone()
         let cancelBtn = sut.navigationItem.rightBarButtonItem
         XCTAssertEqual(cancelBtn?.accessibilityLabel, SourceVController.AccessibilityStrings.Close.rawValue)
     }
     
     func testCancelActionInvokesEventHandlersOnCancel() {
-        sut.cancelAction(UIButton())
-        XCTAssertEqual(eventHandler.onCancelWasInvoked, 1)
+        sut.doneAction(UIButton())
+        XCTAssertEqual(eventHandler.onDoneWasInvoked, 1)
     }
     
     func testSetRefresherMustChangeConfiguratorsRefresher() {
@@ -221,6 +238,49 @@ class SourceVControllerTests: XCTestCase {
         sut.tableView = table
         sut.resetTableContentOffset()
         XCTAssertEqual(table.scrollToRowWasInvoked, 1)
+    }
+    
+    func testSetDoneEnabledMustChangeRightBarButton() {
+        let btn = UIBarButtonItem()
+        sut.navigationItem.rightBarButtonItem = btn
+        
+        sut.setDoneEnabled(false)
+        XCTAssertFalse(btn.isEnabled)
+        
+        sut.setDoneEnabled(true)
+        XCTAssertTrue(btn.isEnabled)
+    }
+    
+    func testReloadCellMustReloadTablesRow() {
+        sut.tbl = tableViewMock
+        sut.reloadCell(at: 40)
+        XCTAssertEqual(tableViewMock.reloadRowsWasInvoked, 1)
+        XCTAssertEqual(tableViewMock.reloadRows.first?.row, 40)
+    }
+    
+    func testTopSegmentChangedMustInvokeSwitchSegment() {
+        sut.topSegment.selectedSegmentIndex = 1
+        sut.topSegmentChanged(UIButton())
+        XCTAssertEqual(eventHandler.switchSegmentWasInvoked, 1)
+        XCTAssertEqual(eventHandler.segment, 1)
+    }
+    
+    func testShowSourceSettingsMustSetBottomConstraintTo0() {
+        sut.bottomConstraint.constant = 44.0
+        sut.showSourceSettings()
+        XCTAssertEqual(sut.bottomConstraint.constant, 0.0)
+    }
+    
+    func testHideSourceSettingsMustSetBottomConstraintEqualToHeight() {
+        sut.hideSourceSettings()
+        XCTAssertEqual(sut.bottomConstraint.constant, -sut.bottomBar.frame.height)
+    }
+    
+    func testRemoveCellMustDeleteTableViewRows() {
+        sut.tbl = tableViewMock
+        sut.removeCell(at: 43)
+        XCTAssertEqual(tableViewMock.deleteRowsWasInvoked, 1)
+        XCTAssertEqual(tableViewMock.deleteRows.first?.row, 43)
     }
 }
 extension SourceVControllerTests {
@@ -263,9 +323,16 @@ extension SourceVControllerTests {
             savedIndex = index
         }
         
-        var onCancelWasInvoked = 0
-        func onCancel() {
-            onCancelWasInvoked += 1
+        var onDoneWasInvoked = 0
+        func onDone() {
+            onDoneWasInvoked += 1
+        }
+        
+        var switchSegmentWasInvoked = 0
+        var segment: Int? = nil
+        func switchSegment(_ segment: Int) {
+            self.segment = segment
+            switchSegmentWasInvoked += 1
         }
     }
     class CellPresenterSpy: SourceTableViewPresenter {
@@ -292,6 +359,20 @@ extension SourceVControllerTests {
             cellIdentifier = identifier
             self.indexPath = indexPath
             return cell
+        }
+        
+        var reloadRowsWasInvoked = 0
+        var reloadRows: [IndexPath] = []
+        override func reloadRows(at indexPaths: [IndexPath], with animation: UITableViewRowAnimation) {
+            reloadRows = indexPaths
+            reloadRowsWasInvoked += 1
+        }
+        
+        var deleteRowsWasInvoked = 0
+        var deleteRows: [IndexPath] = []
+        override func deleteRows(at indexPaths: [IndexPath], with animation: UITableViewRowAnimation) {
+            deleteRowsWasInvoked += 1
+            deleteRows = indexPaths
         }
         
         var scrollToRowWasInvoked = 0

@@ -16,14 +16,27 @@ class NewsStoreTests: XCTestCase {
     
     func testSaveArticlesMustChangeSavedCount() {
         XCTAssertEqual(sut.count(), 0)
-        sut.save(generate2Articles())
+        sut.add(generate2Articles())
         XCTAssertEqual(sut.count(), 2)
     }
     
     func testArticleForIndexMustReturnSavedArticle() {
-        sut.save(generate2Articles())
+        sut.add(generate2Articles())
         XCTAssertEqual(sut.article(for: 0).author, "author1")
         XCTAssertEqual(sut.article(for: 1).url, "url2")
+    }
+    
+    func testAddMustNotRemovePreviouslyAdded() {
+        sut.add(generate2Articles())
+        sut.add(generate2Articles())
+        XCTAssertEqual(sut.count(), 4)
+    }
+    
+    func testClearMustRemoveAllArticles() {
+        sut.add(generate2Articles())
+        sut.add(generate2Articles())
+        sut.clear()
+        XCTAssertEqual(sut.count(), 0)
     }
     
     private func generate2Articles() -> [Article] {

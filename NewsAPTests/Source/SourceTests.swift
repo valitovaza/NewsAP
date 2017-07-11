@@ -64,6 +64,25 @@ class SourceTests: XCTestCase, JsonTestable {
         validateField(TestField(Source.sortBysAvailableKey, actualField: sut.sortBysAvailable.first!, expectedField: .top))
     }
     
+    func testEncodeMustProvideConvertableDictionary() {
+        let source = Source(validDict)
+        if let dict = source?.encode() {
+            let tSource = Source(dict)
+            compareSources(l: source, r: tSource)
+        }else{
+            XCTFail("Invalid dictionary produced")
+        }
+    }
+    private func compareSources(l: Source?, r: Source?) {
+        XCTAssertEqual(l?.id, r?.id)
+        XCTAssertEqual(l?.name, r?.name)
+        XCTAssertEqual(l?.desc, r?.desc)
+        XCTAssertEqual(l?.url, r?.url)
+        XCTAssertEqual(l?.country.rawValue, r?.country.rawValue)
+        XCTAssertEqual(l?.language.rawValue, r?.language.rawValue)
+        XCTAssertEqual(l?.category.rawValue, r?.category.rawValue)
+    }
+    
     // MARK: - Auxiliary methods
     
     private func validateField<F>(_ field: TestField<F>) where F: Equatable {

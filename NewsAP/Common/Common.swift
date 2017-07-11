@@ -10,3 +10,13 @@ protocol Reloadable: HidableView {
 }
 extension UIView: HidableView {}
 extension UITableView: Reloadable {}
+
+extension UIImage {
+    enum Asset: String {
+        case DeselectedIcon = "deselectedIcon"
+        case SelectedIcon = "selectedIcon"
+    }
+    convenience init(asset: Asset) {
+        self.init(named: asset.rawValue)!
+    }
+}

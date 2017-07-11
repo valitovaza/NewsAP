@@ -33,6 +33,7 @@ class SourceCellTests: XCTestCase {
         XCTAssertNotNil(sut.sName)
         XCTAssertNotNil(sut.sDesc)
         XCTAssertNotNil(sut.sCategory)
+        XCTAssertNotNil(sut.sSelectIcon)
     }
     
     func testDisplayNameChangesName() {
@@ -60,5 +61,17 @@ class SourceCellTests: XCTestCase {
                                      expectedText: String) {
         XCTAssertEqual(lblSpy.setTextWasInvoked, 1)
         XCTAssertEqual(lblSpy.text, expectedText)
+    }
+    
+    func testDisplaySelectedTrueMustPresentSelectedIcon() {
+        sut.displaySelected(true)
+        let image = UIImage(asset: .SelectedIcon)
+        XCTAssertEqual(sut.sSelectIcon.image, image)
+    }
+    
+    func testDisplaySelectedFalseMustPresentDeselectedIcon() {
+        sut.displaySelected(false)
+        let image = UIImage(asset: .DeselectedIcon)
+        XCTAssertEqual(sut.sSelectIcon.image, image)
     }
 }

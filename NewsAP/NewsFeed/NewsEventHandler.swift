@@ -25,27 +25,48 @@ class NewsInteractor: NewsEventHandlerProtocol {
         }
     }
     private func executeOnDidAppear() {
-        if let source = sourceHolder.source {
-            loadArticles(with: source)
+        if let sources = selectedSources() {
+            loadArticles(with: sources)
         }else{
             router.openSources()
         }
     }
-    private func loadArticles(with source: String) {
+    private func selectedSources() -> [Source]? {
+        if let sources = sourceHolder.sources, sources.count > 0 {
+            return sources
+        }
+        return nil
+    }
+    private var loadingSources: [Source] = []
+    private func loadArticles(with sources: [Source]) {
+        store.clear()
+        loadingSources = sources
         presenter.present(state: .Loading)
-        loader.load(source) {[weak self] (articles) in
+        loadNewsFromFirstLoadingSource()
+    }
+    private func handleLoadResponse(_ articles: [Article]) {
+        store.add(articles)
+        presentState(with: articles)
+        loadNewsFromFirstLoadingSource()
+    }
+    private func presentState(with articles: [Article]) {
+        if articles.count > 0 {
+            presenter.present(state: .News)
+        }else if loadingSources.count == 0 && store.count() == 0 {
+            presenter.present(state: .Error)
+        }
+    }
+    private func loadNewsFromFirstLoadingSource() {
+        guard loadingSources.count > 0 else {return}
+        loader.load(loadingSources.removeFirst().id)
+        {[weak self] (articles) in
             self?.handleLoadResponse(articles)
         }
     }
-    private func handleLoadResponse(_ articles: [Article]) {
-        store.save(articles)
-        let state: NewsState = articles.count > 0 ? .News : .Error
-        presenter.present(state: state)
-    }
     
     func refresh() {
-        if let source = sourceHolder.source {
-            loadArticles(with: source)
+        if let sources = selectedSources() {
+            loadArticles(with: sources)
         }
     }
     

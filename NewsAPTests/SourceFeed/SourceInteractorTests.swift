@@ -66,15 +66,37 @@ class SourceInteractorTests: XCTestCase {
         dataSource = nil
     }
     
-    func testIfSelectedSourceExistCancelButtonMustBePresentedOnDidLoad() {
-        sourceHolder.source = "testSource"
+    func testDoneButtonMustBePresentedOnDidLoad() {
         sut.onDidLoad()
-        XCTAssertEqual(presenter.showCancelButtonWasInvoked, 1)
+        XCTAssertEqual(presenter.showDoneButtonWasInvoked, 1)
     }
     
-    func testIfSelectedSourceIsNotExistCancelButtonAlsoMustNotPresented() {
+    func testDoneButtonDisabledIfNoSelectedSourcesOnDidLoad() {
         sut.onDidLoad()
-        XCTAssertEqual(presenter.showCancelButtonWasInvoked, 0)
+        XCTAssertEqual(presenter.configureDoneButtonWasInvoked, 1)
+        XCTAssertEqual(presenter.configureFlag, false)
+    }
+    
+    func testDoneButtonEnabledIfSelectedSourcesExistOnDidLoad() {
+        sourceHolder.sources = [testSource]
+        sut.onDidLoad()
+        XCTAssertEqual(presenter.configureDoneButtonWasInvoked, 1)
+        XCTAssertEqual(presenter.configureFlag, true)
+    }
+    
+    func testDoneButtonDisabledAfterPresentingDoneButtonOnDidLoad() {
+        presenter.configureCallback = {[unowned self] in
+            XCTAssertEqual(self.presenter.showDoneButtonWasInvoked, 1)
+        }
+        sut.onDidLoad()
+    }
+    
+    func testSetSelectedIdsMustBeInvokedOnDidLoad() {
+        sourceHolder.sources = [testSource, secondTestSource]
+        sut.onDidLoad()
+        XCTAssertEqual(presenter.setSelectedIdsWasInvoked, 1)
+        XCTAssertEqual(presenter.selectedIds.count, 2)
+        XCTAssertEqual(presenter.selectedIds.first, testSource.id)
     }
     
     func testPresentParamsMustInvokesOnDidLoad() {
@@ -171,39 +193,86 @@ class SourceInteractorTests: XCTestCase {
         return loader.completition
     }
     
-    func testSelectSourceMustGetAndSaveSourceFromDataSource() {
+    func testSelectSourceMustSelectSourceFromDataSource() {
         set2SouresAndSelectFirst()
-        XCTAssertEqual(sourceHolder.saveWasInvoked, 1)
-        XCTAssertEqual(sourceHolder.savedSource, dataSource.source(at: 0).id)
+        XCTAssertEqual(sourceHolder.selectWasInvoked, 1)
+        XCTAssertEqual(sourceHolder.savedSource?.id, dataSource.source(at: 0).id)
         
         sut.selectSource(at: 1)
-        XCTAssertEqual(sourceHolder.saveWasInvoked, 2)
-        XCTAssertEqual(sourceHolder.savedSource, dataSource.source(at: 1).id)
+        XCTAssertEqual(sourceHolder.selectWasInvoked, 2)
+        XCTAssertEqual(sourceHolder.savedSource?.id, dataSource.source(at: 1).id)
     }
     
-    func testSelectSourceMustInvokeCloseOnPresenter() {
+    func testSelectSourceMustInvokeReloadCell() {
+        dataSource.source = [testSource, secondTestSource]
+        sut.selectSource(at: 1)
+        XCTAssertEqual(presenter.reloadCellWasInvoked, 1)
+        XCTAssertEqual(presenter.reloadIndex, 1)
+    }
+    
+    func testSelectSourceMustInvokeRemoveCellIfSelectedScreenOpened() {
+        sut.switchSegment(1)
+        dataSource.source = [testSource, secondTestSource]
+        
+        sut.selectSource(at: 1)
+        
+        XCTAssertEqual(presenter.reloadCellWasInvoked, 0)
+        XCTAssertEqual(presenter.removeCellWasInvoked, 1)
+        XCTAssertEqual(presenter.removedIndex, 1)
+    }
+    
+    func testSelectSourceMustInvokeSetSelectedSourceIfSelectedScreenOpened() {
+        sut.switchSegment(1)
         set2SouresAndSelectFirst()
-        XCTAssertEqual(presenter.closeWasInvoked, 1)
+        XCTAssertEqual(dataSource.setSelectedSourcesWasInvoked, 2)
     }
     
-    func testSelectSourceMustInvokeRefreshOnNewsFeed() {
+    func testSelectSourceMustNotInvokeSetSelectedSourceIfAllSceenOpened() {
+        sut.switchSegment(0)
         set2SouresAndSelectFirst()
-        XCTAssertEqual(newsRefresher.refreshWasInvoked, 1)
+        XCTAssertEqual(dataSource.setSelectedSourcesWasInvoked, 0)
     }
     
-    func testSelectSourceMustInvokeRefreshAfterSavingSource() {
-        newsRefresher.callBack = { [unowned self] in
-            XCTAssertEqual(self.sourceHolder.saveWasInvoked, 1)
+    func testSelectSourceMustBeInvokedBeforeCellChangesAndAfterSavingSelectedSource() {
+        sut.switchSegment(1)
+        dataSource.setSelectedSourcesCallback = {[unowned self] in
+            XCTAssertEqual(self.sourceHolder.selectWasInvoked, 1)
+            XCTAssertEqual(self.presenter.removeCellWasInvoked, 0)
         }
         set2SouresAndSelectFirst()
     }
     
-    func testSaveSourceMustInvokesBeforeClose() {
-        presenter.closeCallback = {[unowned self] in
-            XCTAssertEqual(self.sourceHolder.saveWasInvoked, 1)
+    func testSelectSourceMustInvokeReloadAfterSavingToHolder() {
+        presenter.reloadCallback = {[unowned self] in
+            XCTAssertEqual(self.sourceHolder.selectWasInvoked, 1)
         }
         set2SouresAndSelectFirst()
     }
+    
+    func testSelectSourceMustConfigureDoneButton() {
+        set2SouresAndSelectFirst()
+        XCTAssertEqual(presenter.configureDoneButtonWasInvoked, 1)
+    }
+    
+    func testSelectSourceMustChangeSelectedSourceIds() {
+        set2SouresAndSelectFirst()
+        XCTAssertEqual(presenter.setSelectedIdsWasInvoked, 1)
+    }
+    
+    func testSetSelectedSourceIdsMustBeInvokedAfterSaving() {
+        presenter.selectedCallback = {[unowned self] in
+            XCTAssertEqual(self.sourceHolder.selectWasInvoked, 1)
+        }
+        set2SouresAndSelectFirst()
+    }
+    
+    func testConfigureDoneButtonInvokesAfterSavingSelectedSource() {
+        presenter.configureCallback = {[unowned self] in
+            XCTAssertEqual(self.sourceHolder.selectWasInvoked, 1)
+        }
+        set2SouresAndSelectFirst()
+    }
+    
     private func set2SouresAndSelectFirst() {
         dataSource.source = [testSource, secondTestSource]
         sut.selectSource(at: 0)
@@ -400,9 +469,41 @@ class SourceInteractorTests: XCTestCase {
         tstSavedSourceLoadingParams(expectedCountry: .de)
     }
     
-    func testOnCancelMustCloseVc() {
-        sut.onCancel()
+    func testOnDoneMustCloseVc() {
+        sut.onDone()
         XCTAssertEqual(presenter.closeWasInvoked, 1)
+    }
+    
+    func testOnDoneMustRefreshNews() {
+        sut.onDone()
+        XCTAssertEqual(newsRefresher.refreshWasInvoked, 1)
+    }
+    
+    func testSwitchSegmentMustInvokeConfigureUIForSegment() {
+        sut.switchSegment(1)
+        XCTAssertEqual(presenter.configureUIWasInvoked, 1)
+        XCTAssertEqual(presenter.configureSegment, 1)
+    }
+    
+    func testSwitchSegmentTo0MustRemoveSelectedSources() {
+        sut.switchSegment(0)
+        XCTAssertEqual(dataSource.setSelectedSourcesWasInvoked, 0)
+        XCTAssertEqual(dataSource.removeSelectedSourcesWasInvoked, 1)
+    }
+    
+    func testSwitchSegmentTo1MustSetSelectedSources() {
+        sourceHolder.sources = [testSource]
+        sut.switchSegment(1)
+        XCTAssertEqual(dataSource.setSelectedSourcesWasInvoked, 1)
+        XCTAssertEqual(dataSource.removeSelectedSourcesWasInvoked, 0)
+        XCTAssertEqual(dataSource.selectedSources.first?.id, testSource.id)
+    }
+    
+    func testSwitchSegmentTo1WithNoSelectedSourcesMustSetSelectedSourcesToEmptyArray() {
+        sut.switchSegment(1)
+        XCTAssertEqual(dataSource.setSelectedSourcesWasInvoked, 1)
+        XCTAssertEqual(dataSource.removeSelectedSourcesWasInvoked, 0)
+        XCTAssertEqual(dataSource.selectedSources.count, 0)
     }
 }
 extension SourceInteractorTests {
@@ -453,21 +554,61 @@ extension SourceInteractorTests {
             closeWasInvoked += 1
         }
         
-        var showCancelButtonWasInvoked = 0
-        func showCancelButton() {
-            showCancelButtonWasInvoked += 1
+        var showDoneButtonWasInvoked = 0
+        func showDoneButton() {
+            showDoneButtonWasInvoked += 1
+        }
+        
+        var reloadCellWasInvoked = 0
+        var reloadIndex: Int? = nil
+        var reloadCallback: (()->())?
+        func reloadCell(at index: Int) {
+            reloadCallback?()
+            reloadCellWasInvoked += 1
+            reloadIndex = index
+        }
+        var removeCellWasInvoked = 0
+        var removedIndex: Int?
+        func removeCell(at index: Int) {
+            removedIndex = index
+            removeCellWasInvoked += 1
+        }
+        
+        var configureDoneButtonWasInvoked = 0
+        var configureFlag: Bool? = nil
+        var configureCallback: (()->())?
+        func configureDoneButton(enabled: Bool) {
+            configureCallback?()
+            configureFlag = enabled
+            configureDoneButtonWasInvoked += 1
+        }
+        
+        var selectedCallback: (()->())?
+        var setSelectedIdsWasInvoked = 0
+        var selectedIds: [String] = []
+        func setSelectedIds(_ ids: [String]) {
+            selectedCallback?()
+            setSelectedIdsWasInvoked += 1
+            selectedIds = ids
+        }
+        
+        var configureUIWasInvoked = 0
+        var configureSegment: Int?
+        func configureUI(for segment: Int) {
+            configureSegment = segment
+            configureUIWasInvoked += 1
         }
     }
     class SaverSpy: SourceHolderProtocol {
-        var saveWasInvoked = 0
-        var savedSource: String?
-        func save(source: String) {
-            saveWasInvoked += 1
+        var selectWasInvoked = 0
+        var savedSource: Source?
+        func select(source: Source) {
+            selectWasInvoked += 1
             savedSource = source
         }
-        var source: String?
+        var sources: [Source]?
     }
-    class DataProviderMock: SourceDataProviderProtocol {
+    class DataProviderMock: SourceDataProviderProtocol, SourceDataSaver{
         var source: [Source] = []
         func source(at index: Int) -> Source {
             return source[index]
@@ -479,6 +620,18 @@ extension SourceInteractorTests {
         }
         var count: Int {
             return 0
+        }
+        var setSelectedSourcesCallback: (()->())?
+        var setSelectedSourcesWasInvoked = 0
+        var selectedSources: [Source] = []
+        func setSelectedSources(_ sources: [Source]) {
+            setSelectedSourcesCallback?()
+            selectedSources = sources
+            setSelectedSourcesWasInvoked += 1
+        }
+        var removeSelectedSourcesWasInvoked = 0
+        func removeSelectedSources() {
+            removeSelectedSourcesWasInvoked += 1
         }
     }
     class ParameterHolderDummy: SourceParameterHolderProtocol {

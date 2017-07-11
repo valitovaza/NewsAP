@@ -10,6 +10,22 @@ class NewsInteractorTests: XCTestCase {
     var dataStore: StoreMock!
     
     var testArticles = [Article(author: "testauthor", title: "testtitle", desc: "testdesc", url: "testurl", urlToImage: "testurlToImage", publishedAt: "testpublishedAt"), Article(author: "testauthor1", title: "title1", desc: "desc1", url: "testurl1", urlToImage: "testurlToImage1", publishedAt: "publishedAt1")]
+    let testSource0 = Source(id: "test source0",
+                             name: "name0",
+                             desc: "desc0",
+                             url: "url0",
+                             category: .general,
+                             language: .en,
+                             country: .au,
+                             sortBysAvailable: [])
+    let testSource1 = Source(id: "test source1",
+                             name: "name1",
+                             desc: "desc1",
+                             url: "url1",
+                             category: .general,
+                             language: .en,
+                             country: .au,
+                             sortBysAvailable: [])
     
     override func setUp() {
         super.setUp()
@@ -71,23 +87,23 @@ class NewsInteractorTests: XCTestCase {
         XCTAssertEqual(router.openSourcesWasInvoked, 1)
     }
     
+    func testIfEmptySelectedSourcesOpenSourceMustInvoked() {
+        didAppearWithEmptySource()
+        XCTAssertEqual(router.openSourcesWasInvoked, 1)
+    }
+    
     private func didAppearWithNoSource() {
-        sourceHolder.source = nil
+        sourceHolder.sources = nil
+        sut.viewDidAppear()
+    }
+    private func didAppearWithEmptySource() {
+        sourceHolder.sources = []
         sut.viewDidAppear()
     }
     
     func testOpenSourceMustNotInvokedIfSourceDefined() {
         sut.viewDidAppear()
         XCTAssertEqual(router.openSourcesWasInvoked, 0)
-    }
-    
-    func testLoadArticlesOnViewDidAppearWithSelectedSource() {
-        tstSetCallbackForCheckThat_LoadInvokesAfterPresentLoadingState()
-        
-        sut.viewDidAppear()
-        
-        tstLoadArticlesMustPresentLoadignState()
-        tstLoadArticlesMustLoadNews()
     }
     
     func testOnDidAppearMustLoadOnlyOnce() {
@@ -102,6 +118,15 @@ class NewsInteractorTests: XCTestCase {
         XCTAssertEqual(router.openSourcesWasInvoked, 1)
     }
     
+    func testLoadArticlesOnViewDidAppearWithSelectedSource() {
+        tstSetCallbackForCheckThat_LoadInvokesAfterPresentLoadingState()
+        
+        sut.viewDidAppear()
+        
+        tstLoadArticlesMustPresentLoadignState()
+        tstLoadArticlesMustLoadNews()
+    }
+    
     private func tstLoadArticlesMustPresentLoadignState() {
         XCTAssertEqual(presenter.invokedPresentStates.count, 1)
         guard case .Loading = presenter.invokedPresentStates.last! else {
@@ -111,7 +136,7 @@ class NewsInteractorTests: XCTestCase {
     }
     private func tstLoadArticlesMustLoadNews() {
         XCTAssertEqual(loader.loadWasInvoked, 1)
-        XCTAssertEqual(loader.source, sourceHolder.source)
+        XCTAssertEqual(loader.source, sourceHolder.sources?.first?.id)
     }
     
     func tstSetCallbackForCheckThat_LoadInvokesAfterPresentLoadingState() {
@@ -156,11 +181,11 @@ class NewsInteractorTests: XCTestCase {
     func testRefreshMustInvokeLoadNews() {
         sut.refresh()
         XCTAssertEqual(loader.loadWasInvoked, 1)
-        XCTAssertEqual(loader.source, sourceHolder.source)
+        XCTAssertEqual(loader.source, sourceHolder.sources?.first?.id)
     }
     
     func testRefreshWithNoSelectedSourceMustBeIgnored() {
-        sourceHolder.source = nil
+        sourceHolder.sources = nil
         sut.refresh()
         XCTAssertEqual(loader.loadWasInvoked, 0)
     }
@@ -189,7 +214,7 @@ class NewsInteractorTests: XCTestCase {
     func testSuccessLoadMustSaveNewsToDataStore() {
         prepareValidNewsResponce()
         sut.refresh()
-        XCTAssertEqual(dataStore.saveNewsWasInvoked, 1)
+        XCTAssertEqual(dataStore.addNewsWasInvoked, 1)
         XCTAssertEqual(dataStore.count(), testArticles.count)
     }
     
@@ -206,10 +231,63 @@ class NewsInteractorTests: XCTestCase {
     }
     
     func testSelectAtMustOpenUrlWithUrlFromDataSource() {
-        dataStore.save(testArticles)
+        dataStore.add(testArticles)
         sut.select(at: 1)
         XCTAssertEqual(router.openArticleWasInvoked, 1)
         XCTAssertEqual(router.savedUrl, testArticles[1].url)
+    }
+    
+    func testNewsFromAllSourcesMustBeLoaded() {
+        setNewsFor2SourcesAndRefresh()
+        //Loading, NewsFrom0Source, NewsFrom1Source = 3
+        XCTAssertEqual(presenter.invokedPresentStates.count, 3)
+        XCTAssertEqual(loader.source, testSource1.id)
+    }
+    
+    func testLoadNewsFromNextSourceMustInvokeAfterPresentingPreviousNews() {
+        loader.callback = {[unowned self]_ in
+            if self.loader.source == self.testSource1.id {
+                //Loading, NewsFrom0Source = 2
+                XCTAssertEqual(self.presenter.invokedPresentStates.count, 2)
+            }
+        }
+        setNewsFor2SourcesAndRefresh()
+    }
+    
+    private func setNewsFor2SourcesAndRefresh() {
+        sourceHolder.sources = [testSource0, testSource1]
+        prepareValidNewsResponce()
+        sut.refresh()
+    }
+    
+    func testErrorStateMustNotBePresentedIfLoadingSourcesExist() {
+        sourceHolder.sources = [testSource0, testSource1]
+        sut.refresh()
+        loader.savedCallback?([]) //invalid, empty result
+        XCTAssertEqual(self.presenter.invokedPresentStates.count, 1)
+        guard case .Loading = self.presenter.invokedPresentStates.last! else {
+            XCTFail("not Loading state: \(self.presenter.invokedPresentStates.last!)")
+            return
+        }
+    }
+    
+    func testErrorStateMustNotBePresentedIfAnyArticlesInDataSource() {
+        sourceHolder.sources = [testSource0, testSource1]
+        sut.refresh()
+        loader.savedCallback?(testArticles)
+        dataStore.hardCount = 2
+        loader.savedCallback?([])
+        XCTAssertEqual(self.presenter.invokedPresentStates.count, 2)
+    }
+    
+    func testRefreshWithSelectedSourcesMustClearDataSource() {
+        sut.refresh()
+        XCTAssertEqual(dataStore.clearWasInvoked, 1)
+    }
+    
+    func testViewDidAppearWithSelectedSourcesMustClearDataSource() {
+        sut.viewDidAppear()
+        XCTAssertEqual(dataStore.clearWasInvoked, 1)
     }
 }
 extension NewsInteractorTests {
@@ -225,6 +303,7 @@ extension NewsInteractorTests {
         
         var loadWasInvoked: Int = 0
         var callback: (([Article])->())?
+        var savedCallback: (([Article])->())?
         var testArticles: [Article] = []
         var invokeCompletition = false
         var source: String?
@@ -234,6 +313,8 @@ extension NewsInteractorTests {
             loadCalled()
             if invokeCompletition {
                 completition(testArticles)
+            }else{
+                savedCallback = completition
             }
         }
         private func loadCalled() {
@@ -255,21 +336,33 @@ extension NewsInteractorTests {
         }
     }
     class SourceHolderMock: SourceHolderProtocol {
-        var source: String? = "test source"
-        func save(source: String) {}
+        var sources: [Source]? = [Source(id: "test source",
+                                         name: "name",
+                                         desc: "desc",
+                                         url: "url",
+                                         category: .general,
+                                         language: .en,
+                                         country: .au,
+                                         sortBysAvailable: [])]
+        func select(source: Source) {}
     }
 }
 class StoreMock: ArticleDataStoreProtocol {
     var articles: [Article] = []
     var callback: (()->())? = nil
-    var saveNewsWasInvoked = 0
-    func save(_ articles: [Article]) {
+    var addNewsWasInvoked = 0
+    func add(_ articles: [Article]) {
         callback?()
-        saveNewsWasInvoked += 1
+        addNewsWasInvoked += 1
         self.articles = articles
     }
+    var clearWasInvoked = 0
+    func clear() {
+        clearWasInvoked += 1
+    }
+    var hardCount: Int?
     func count() -> Int {
-        return articles.count
+        return hardCount ?? articles.count
     }
     func article(for index: Int) -> Article {
         return articles[index]

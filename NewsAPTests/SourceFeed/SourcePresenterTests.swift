@@ -26,9 +26,10 @@ class SourcePresenterTests: XCTestCase {
         XCTAssertEqual(animator.animateLoadingWasInvoked, 1)
     }
     
-    func testPresentLoadingMustHideTableView() {
+    func testPresentLoadingMustHideTableViewAndEmptyLabel() {
         sut.present(state: .Loading)
         XCTAssertTrue(pView.tableView.isHidden)
+        XCTAssertTrue(pView.emptyLabel.isHidden)
     }
     
     func testPresentLoadingMustHideErrorView() {
@@ -48,6 +49,24 @@ class SourcePresenterTests: XCTestCase {
         XCTAssertEqual(pView.resetTableContentOffsetWasInvoked, 1)
     }
     
+    func testPresentSourceMustHideEmptyLabelIfSourcesExist() {
+        sut.present(state: .Sources)
+        XCTAssertTrue(pView.emptyLabel.isHidden)
+    }
+    
+    func testPresentSourceMustShowEmptyLabelIfSourcesEmptyOnSelectedSegment() {
+        dataSource.testCount = 0
+        sut.configureUI(for: 1)
+        sut.present(state: .Sources)
+        XCTAssertFalse(pView.emptyLabel.isHidden)
+    }
+    
+    func testPresentSourceMustHideTableIfSourcesEmpty() {
+        dataSource.testCount = 0
+        sut.present(state: .Sources)
+        XCTAssertTrue(pView.tableView.isHidden)
+    }
+    
     func testPresentSourceMustRemoveLoadingAnimation() {
         sut.present(state: .Sources)
         XCTAssertEqual(animator.removeAnimationWasInvoked, 1)
@@ -58,9 +77,11 @@ class SourcePresenterTests: XCTestCase {
         XCTAssertTrue(pView.errorView.isHidden)
     }
     
-    func testPresentErrorMustHideTableView() {
+    func testPresentErrorMustHideTableViewAndEmptyLabel() {
+        dataSource.testCount = 0
         sut.present(state: .Error)
         XCTAssertTrue(pView.tableView.isHidden)
+        XCTAssertTrue(pView.emptyLabel.isHidden)
     }
     
     func testPresentErrorMustRemoveLoadingAnimation() {
@@ -72,6 +93,56 @@ class SourcePresenterTests: XCTestCase {
         pView.errorView.isHidden = true
         sut.present(state: .Error)
         XCTAssertFalse(pView.errorView.isHidden)
+    }
+    
+    func testConfigureUIForSourceSegmentMustHideEmptyLabelIfErrorState() {
+        sut.present(state: .Error)
+        dataSource.testCount = 0
+        sut.configureUI(for: 0)
+        XCTAssertTrue(pView.emptyLabel.isHidden)
+    }
+    
+    func testConfigureUIForSelectedSegmentMustHideEmptyLabelIfDataSourceNotEmpty() {
+        sut.present(state: .Error)
+        sut.configureUI(for: 1)
+        XCTAssertTrue(pView.emptyLabel.isHidden)
+    }
+    
+    func testConfigureUIForSelectedSegmentMustHideErrorView() {
+        sut.present(state: .Error)
+        sut.configureUI(for: 1)
+        XCTAssertTrue(pView.errorView.isHidden)
+    }
+    
+    func testConfigureUIForSourceStateMustShowErrorViewInErrorState() {
+        sut.present(state: .Error)
+        sut.configureUI(for: 1)
+        sut.configureUI(for: 0)
+        XCTAssertFalse(pView.errorView.isHidden)
+    }
+    
+    func testConfigureUIForSourceStateMustHideErrorViewIfNotErrorState() {
+        sut.present(state: .Sources)
+        sut.configureUI(for: 1)
+        sut.configureUI(for: 0)
+        XCTAssertTrue(pView.errorView.isHidden)
+    }
+    
+    func testViewsVisibilityOnPresentErrorForSelectedSegment() {
+        sut.configureUI(for: 1)
+        sut.present(state: .Error)
+        XCTAssertTrue(pView.errorView.isHidden)
+        XCTAssertTrue(pView.emptyLabel.isHidden)
+        XCTAssertFalse(pView.tableView.isHidden)
+    }
+    
+    func testViewsVisibilityOnPresentErrorForSelectedSegmentAndEmptyDataSource() {
+        dataSource.testCount = 0
+        sut.configureUI(for: 1)
+        sut.present(state: .Error)
+        XCTAssertTrue(pView.errorView.isHidden)
+        XCTAssertFalse(pView.emptyLabel.isHidden)
+        XCTAssertTrue(pView.tableView.isHidden)
     }
     
     func testCountMustBeFromDataSource() {
@@ -97,6 +168,29 @@ class SourcePresenterTests: XCTestCase {
         sut.present(cell: cell, at: 0)
         XCTAssertEqual(cell.displayCategoryWasInvoked, 1)
         XCTAssertEqual(cell.savedCategory, "general")
+    }
+    
+    func testPresentCellWithoutSelectedIdsMustDisplaySelectedFalse() {
+        let cell = CellSpy()
+        sut.present(cell: cell, at: 0)
+        XCTAssertEqual(cell.displaySelectedWasInvoked, 1)
+        XCTAssertEqual(cell.selected, false)
+    }
+    
+    func testPresentCellWithSelectedIdMustDisplaySelectedTrue() {
+        sut.setSelectedIds([dataSource.testSource.id])
+        let cell = CellSpy()
+        sut.present(cell: cell, at: 0)
+        XCTAssertEqual(cell.displaySelectedWasInvoked, 1)
+        XCTAssertEqual(cell.selected, true)
+    }
+    
+    func testPresentCellWithDifferentSelectedIdMustDisplaySelectedFalse() {
+        sut.setSelectedIds(["unknown id"])
+        let cell = CellSpy()
+        sut.present(cell: cell, at: 0)
+        XCTAssertEqual(cell.displaySelectedWasInvoked, 1)
+        XCTAssertEqual(cell.selected, false)
     }
     
     func testCloseMustInvokeDismiss() {
@@ -132,13 +226,85 @@ class SourcePresenterTests: XCTestCase {
     }
     
     func testShowCancelMustInvokeDisplayCancel() {
-        sut.showCancelButton()
-        XCTAssertEqual(pView.displayCancelWasInvoked, 1)
+        sut.showDoneButton()
+        XCTAssertEqual(pView.displayDoneWasInvoked, 1)
+    }
+    
+    func testConfigureDoneButtonMustSetDoneEnableState() {
+        sut.configureDoneButton(enabled: true)
+        XCTAssertEqual(pView.setDoneEnabledWasInvoked, 1)
+        XCTAssertEqual(pView.doneEnabled, true)
+    }
+    
+    func testReloadCellMustInvokeViewsReload() {
+        sut.reloadCell(at: 100)
+        XCTAssertEqual(pView.reloadCellWasInvoked, 1)
+        XCTAssertEqual(pView.reloadIndex, 100)
+    }
+    
+    func testConfigureUIForFirstSegmentMustShowSourceSettings() {
+        sut.configureUI(for: 0)
+        XCTAssertEqual(pView.showSourceSettingsWasInvoked, 1)
+        XCTAssertEqual(pView.hideSourceSettingsWasInvoked, 0)
+    }
+    
+    func testConfigureUIForSecondSegmentMustHideSourceSettings() {
+        sut.configureUI(for: 1)
+        XCTAssertEqual(pView.showSourceSettingsWasInvoked, 0)
+        XCTAssertEqual(pView.hideSourceSettingsWasInvoked, 1)
+    }
+    
+    func testConfigureUIForSegmentMustReloadTable() {
+        sut.configureUI(for: 0)
+        sut.configureUI(for: 1)
+        XCTAssertEqual((pView.tableView as! TableViewSpy).reloadDataWasInvoked, 2)
+        XCTAssertEqual(pView.resetTableContentOffsetWasInvoked, 2)
+    }
+    
+    func testRemoveCellMustInvokeRemoveCellOnView() {
+        sut.removeCell(at: 45)
+        XCTAssertEqual(pView.removeCellWasInvoked, 1)
+        XCTAssertEqual(pView.removeIndex, 45)
+    }
+    
+    func testRemoveCellMustShowEmptyLabelIfEmptyDataSourceOnSelectedSegment() {
+        sut.configureUI(for: 1)
+        sut.present(state: .Sources)
+        pView.emptyLabel.isHidden = true
+        dataSource.testCount = 0
+        sut.removeCell(at: 45)
+        XCTAssertTrue(pView.tableView.isHidden)
+        XCTAssertFalse(pView.emptyLabel.isHidden)
+    }
+    
+    func testRemoveCellMustHideEmptyLabelIfDataSourceIsNotEmpty() {
+        sut.present(state: .Sources)
+        sut.removeCell(at: 45)
+        XCTAssertFalse(pView.tableView.isHidden)
+        XCTAssertTrue(pView.emptyLabel.isHidden)
+    }
+    
+    func testConfigureUIForSelectedStateInLoadingMustHideAll() {
+        sut.present(state: .Loading)
+        sut.configureUI(for: 1)
+        XCTAssertTrue(pView.tableView.isHidden)
+        XCTAssertTrue(pView.emptyLabel.isHidden)
+        XCTAssertTrue(pView.errorView.isHidden)
+    }
+    
+    func testConfigureUIForSourceStateInLoadingMustHideAll() {
+        dataSource.testCount = 0
+        sut.present(state: .Loading)
+        sut.configureUI(for: 0)
+        XCTAssertTrue(pView.tableView.isHidden)
+        XCTAssertTrue(pView.emptyLabel.isHidden)
+        XCTAssertTrue(pView.errorView.isHidden)
     }
 }
 extension SourcePresenterTests {
     class ViewSpy: SourcePresenterView {
         var errorView: HidableView = UIView()
+        var emptyLabel: HidableView = UILabel()
         var tableView: Reloadable = TableViewSpy()
         var dismissWasInvoked = 0
         var savedFlag: Bool?
@@ -167,18 +333,47 @@ extension SourcePresenterTests {
             savedCountry = country
         }
         
-        var displayCancelWasInvoked = 0
-        func displayCancel() {
-            displayCancelWasInvoked += 1
+        var displayDoneWasInvoked = 0
+        func displayDone() {
+            displayDoneWasInvoked += 1
         }
         
         var resetTableContentOffsetWasInvoked = 0
         func resetTableContentOffset() {
             resetTableContentOffsetWasInvoked += 1
         }
+        
+        var setDoneEnabledWasInvoked = 0
+        var doneEnabled: Bool? = nil
+        func setDoneEnabled(_ enable: Bool) {
+            doneEnabled = enable
+            setDoneEnabledWasInvoked += 1
+        }
+        
+        var reloadCellWasInvoked = 0
+        var reloadIndex: Int? = nil
+        func reloadCell(at index: Int) {
+            reloadIndex = index
+            reloadCellWasInvoked += 1
+        }
+        
+        var removeCellWasInvoked = 0
+        var removeIndex: Int?
+        func removeCell(at index: Int) {
+            removeCellWasInvoked += 1
+            removeIndex = index
+        }
+        
+        var hideSourceSettingsWasInvoked = 0
+        func hideSourceSettings() {
+            hideSourceSettingsWasInvoked += 1
+        }
+        var showSourceSettingsWasInvoked = 0
+        func showSourceSettings() {
+            showSourceSettingsWasInvoked += 1
+        }
     }
     class DataSourceSpy: SourceDataProviderProtocol {
-        func save(_ sources: [Source]) {}
         var lastIndex: Int?
         var testSource = Source(id: "test",
                                 name: "test name",
@@ -192,8 +387,9 @@ extension SourcePresenterTests {
             lastIndex = index
             return testSource
         }
+        var testCount = 987
         var count: Int {
-            return 987
+            return testCount
         }
     }
     class CellSpy: SourceCellProtocol {
@@ -214,6 +410,12 @@ extension SourcePresenterTests {
         func displayCategory(_ category: String) {
             displayCategoryWasInvoked += 1
             savedCategory = category
+        }
+        var displaySelectedWasInvoked = 0
+        var selected: Bool? = nil
+        func displaySelected(_ selected: Bool) {
+            self.selected = selected
+            displaySelectedWasInvoked += 1
         }
     }
 }

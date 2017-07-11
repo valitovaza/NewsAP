@@ -3,12 +3,18 @@ import UIKit
 protocol SourcePresenterView: class {
     var tableView: Reloadable {get set}
     var errorView: HidableView {get set}
+    var emptyLabel: HidableView {get set}
     func resetTableContentOffset()
     func dismiss(animated flag: Bool, completion: (() -> Swift.Void)?)
     func displayCategory(_ category: String)
     func displayLanguage(_ language: String)
     func displayCountry(_ country: String)
-    func displayCancel()
+    func displayDone()
+    func setDoneEnabled(_ enable: Bool)
+    func reloadCell(at index: Int)
+    func removeCell(at index: Int)
+    func hideSourceSettings()
+    func showSourceSettings()
 }
 protocol NewsRefresherReceivable {
     func setRefresher(_ refresher: NewsRefresher)
@@ -37,7 +43,14 @@ class SourceVController: UIViewController {
     @IBOutlet weak var categoryButton: UIBarButtonItem!
     @IBOutlet weak var langButton: UIBarButtonItem!
     @IBOutlet weak var countryButton: UIBarButtonItem!
+    @IBOutlet weak var topSegment: UISegmentedControl!
+    @IBOutlet weak var bottomConstraint: NSLayoutConstraint!
+    @IBOutlet weak var bottomBar: UIToolbar!
+    @IBOutlet weak var emptySelectedSourcesLabel: UILabel!
     
+    @IBAction func topSegmentChanged(_ sender: Any) {
+        eventHandler?.switchSegment(topSegment.selectedSegmentIndex)
+    }
     @IBAction func refresh(_ sender: Any) {
         eventHandler?.refresh()
     }
@@ -51,8 +64,8 @@ class SourceVController: UIViewController {
         eventHandler?.selectCountry()
     }
     
-    func cancelAction(_ sender: Any) {
-        eventHandler?.onCancel()
+    func doneAction(_ sender: Any) {
+        eventHandler?.onDone()
     }
 }
 extension SourceVController {
@@ -84,6 +97,14 @@ extension SourceVController: SourcePresenterView {
             errView = newValue as! UIView
         }
     }
+    var emptyLabel: HidableView {
+        get {
+            return emptySelectedSourcesLabel
+        }
+        set {
+            emptySelectedSourcesLabel = newValue as! UILabel
+        }
+    }
     var tableView: Reloadable {
         get {
             return tbl
@@ -93,7 +114,7 @@ extension SourceVController: SourcePresenterView {
         }
     }
     func resetTableContentOffset() {
-        tbl.scrollToRow(at: IndexPath(row: NSNotFound, section: 0), at: .top, animated: true)
+        tbl.scrollToRow(at: IndexPath(row: NSNotFound, section: 0), at: .top, animated: false)
     }
     func displayCategory(_ category: String) {
         categoryButton.title = category
@@ -104,12 +125,31 @@ extension SourceVController: SourcePresenterView {
     func displayCountry(_ country: String) {
         countryButton.title = country
     }
-    func displayCancel() {
-        let cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel,
+    func displayDone() {
+        let doneButton = UIBarButtonItem(barButtonSystemItem: .done,
                                            target: self,
-                                           action: #selector(cancelAction(_:)))
-        cancelButton.accessibilityLabel = AccessibilityStrings.Close.rawValue
-        navigationItem.rightBarButtonItem = cancelButton
+                                           action: #selector(doneAction(_:)))
+        doneButton.accessibilityLabel = AccessibilityStrings.Close.rawValue
+        navigationItem.rightBarButtonItem = doneButton
+    }
+    
+    func setDoneEnabled(_ enable: Bool) {
+        navigationItem.rightBarButtonItem?.isEnabled = enable
+    }
+    
+    func reloadCell(at index: Int) {
+        tbl.reloadRows(at: [IndexPath(row: index, section: 0)],
+                       with: .automatic)
+    }
+    func removeCell(at index: Int) {
+        tbl.deleteRows(at: [IndexPath(row: index, section: 0)],
+                       with: .automatic)
+    }
+    func hideSourceSettings() {
+        bottomConstraint.constant = -bottomBar.frame.height
+    }
+    func showSourceSettings() {
+        bottomConstraint.constant = 0.0
     }
 }
 extension SourceVController: UITableViewDelegate {

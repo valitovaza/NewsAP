@@ -3,6 +3,10 @@ protocol SourceParameterHolderProtocol {
     var language: Language? {get set}
     var country: Country? {get set}
 }
+protocol UserDefaultsProtocol {
+    func set(_ value: Any?, forKey defaultName: String)
+    func object(forKey defaultName: String) -> Any?
+}
 class SourceParameterHolder: SourceParameterHolderProtocol {
     private var saver: UserDefaultsProtocol
     init(_ saver: UserDefaultsProtocol) {

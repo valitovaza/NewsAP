@@ -106,12 +106,12 @@ class NewsPresenterTests: XCTestCase {
     
     func testCountMustBeFromDataSource() {
         XCTAssertEqual(sut.count(), 0)
-        dataStore.save(generate2Articles())
+        dataStore.add(generate2Articles())
         XCTAssertEqual(sut.count(), 2)
     }
     
     private func configuredCell(_ index: Int) -> CellSpy {
-        dataStore.save(generate2Articles())
+        dataStore.add(generate2Articles())
         sut.present(state: .News)
         let cell = CellSpy()
         sut.present(cell: cell, at: index)
