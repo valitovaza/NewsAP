@@ -1,9 +1,12 @@
 protocol NewsPresenterProtocol {
     func present(state: NewsState)
+    func addArticles(change: NewsStoreChange)
 }
 protocol TableViewPresenter {
-    func count() -> Int
-    func present(cell: NewsCellProtocol, at index: Int)
+    func sectionCount() -> Int
+    func count(in section: Int) -> Int
+    func present(cell: NewsCellProtocol, at index: Int, section: Int)
+    func present(header: NewsHeaderProtocol, at section: Int)
 }
 import Foundation
 class NewsPresenter: NewsPresenterProtocol, TableViewPresenter {
@@ -27,6 +30,7 @@ class NewsPresenter: NewsPresenterProtocol, TableViewPresenter {
         }
     }
     private func configureLoadingState() {
+        reloadTable()
         view.tableView.isHidden = true
         view.errorView.isHidden = true
         animator.animateLoading()
@@ -47,11 +51,27 @@ class NewsPresenter: NewsPresenterProtocol, TableViewPresenter {
         animator.removeLoadingAnimation()
     }
     
-    func count() -> Int {
-        return store.count()
+    func addArticles(change: NewsStoreChange) {
+        if case .NewSource(let rows) = change {
+            view?.insertSection(with: rows, at: lastSection)
+        }else if case .AddNewsToSource(let section, let rows) = change {
+            view.addRows(rows, to: section)
+        }
     }
-    func present(cell: NewsCellProtocol, at index: Int) {
-        let article = store.article(for: index)
+    private var lastSection: Int {
+        return store.sectionCount() - 1
+    }
+    func sectionCount() -> Int {
+        return store.sectionCount()
+    }
+    func count(in section: Int) -> Int {
+        return store.count(for: section)
+    }
+    func present(header: NewsHeaderProtocol, at section: Int) {
+        header.displayTitle(store.source(for: section))
+    }
+    func present(cell: NewsCellProtocol, at index: Int, section: Int) {
+        let article = store.article(for: index, in: section)
         configureCell(cell, with: article)
     }
     private func configureCell(_ cell: NewsCellProtocol, with article: Article) {

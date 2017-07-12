@@ -102,8 +102,9 @@ class NewsVControllerTests: XCTestCase {
     }
     
     func testNumberOfRowsInSectionMustBeFromCellPresenter() {
-        XCTAssertEqual(sut.tableView(sut.tbl, numberOfRowsInSection: 0),
-                       cellPresenter.count())
+        XCTAssertEqual(sut.tableView(sut.tbl, numberOfRowsInSection: 40),
+                       cellPresenter.hardCount)
+        XCTAssertEqual(cellPresenter.section, 40)
     }
     
     func testDataSource() {
@@ -126,6 +127,7 @@ class NewsVControllerTests: XCTestCase {
         XCTAssertEqual(sut.tableView(tableViewMock, cellForRowAt: indexPath),
                        cellPresenter.cell! as! UITableViewCell)
         XCTAssertEqual(cellPresenter.presentWasInvoked, 1)
+        XCTAssertEqual(cellPresenter.presentSection, indexPath.section)
         XCTAssertEqual(cellPresenter.index, 4)
     }
     
@@ -163,13 +165,73 @@ class NewsVControllerTests: XCTestCase {
         sut.tableView(sut.tbl, didSelectRowAt: indexPath)
         XCTAssertEqual(eventHandler.selectWasInvoked, 1)
         XCTAssertEqual(eventHandler.selectedIndex, indexPath.row)
+        XCTAssertEqual(eventHandler.section, indexPath.section)
     }
     
     func testResetTableOffsetMustSetContentOffsetToZero() {
         let table = TableViewMock()
+        table.contentOffset = CGPoint(x: 40, y: 40)
         sut.tableView = table
         sut.resetTableContentOffset()
-        XCTAssertEqual(table.scrollToRowWasInvoked, 1)
+        XCTAssertEqual(table.contentOffset.y, 0)
+    }
+    
+    func testNumberOfSectionsInTableViewMustBeFromPresenter() {
+        XCTAssertEqual(sut.numberOfSections(in: TableViewMock()), cellPresenter.sCount)
+        XCTAssertEqual(cellPresenter.sectionCountWasInvoked, 1)
+    }
+    
+    func testHeightForHeaderMustReturnHeaderHeight() {
+        XCTAssertEqual(sut.tableView(TableViewMock(), heightForHeaderInSection: 0), NewsVController.sectionHeight)
+    }
+    
+    func testViewForHeaderMustInvokePresentHeader() {
+        XCTAssertNotNil(sut.tableView(TableViewMock(), viewForHeaderInSection: 89) as? NewsHeaderProtocol)
+        XCTAssertEqual(cellPresenter.presentHeaderWasInvoked, 1)
+        XCTAssertEqual(cellPresenter.headerSection, 89)
+    }
+    
+    func testInsertSectionMustChangeSectionsOfTable() {
+        let table = TableViewMock()
+        insertSectionWith30At50(table)
+        XCTAssertEqual(table.insertSectionsWasInvoked, 1)
+        XCTAssertEqual(table.insertedSections?.first, 50)
+    }
+    
+    func testInsertSectionMustChangeRowsOfTable() {
+        let table = TableViewMock()
+        insertSectionWith30At50(table)
+        XCTAssertEqual(table.insertRowsWasInvoked , 1)
+        XCTAssertEqual(table.rowsIndexPaths.count, 30)
+        XCTAssertEqual(table.rowsIndexPaths.first?.section, 50)
+    }
+    
+    func testBeginEndUpdatesMustWrapTableChanges() {
+        let table = TableViewMock()
+        table.insertSectionsCallback = {
+            XCTAssertEqual(table.beginUpdatesWasInvoked, 1)
+            XCTAssertEqual(table.endUpdatesWasInvoked, 0)
+        }
+        table.insertRowsCallback = {
+            XCTAssertEqual(table.beginUpdatesWasInvoked, 1)
+            XCTAssertEqual(table.endUpdatesWasInvoked, 0)
+        }
+        insertSectionWith30At50(table)
+        XCTAssertEqual(table.endUpdatesWasInvoked, 1)
+    }
+    
+    private func insertSectionWith30At50(_ table: TableViewMock) {
+        sut.tableView = table
+        sut.insertSection(with: 30, at: 50)
+    }
+    
+    func testAddRowsMustChangeRowsOfTable() {
+        let table = TableViewMock()
+        sut.tableView = table
+        sut.addRows(23, to: 5)
+        XCTAssertEqual(table.insertRowsWasInvoked , 1)
+        XCTAssertEqual(table.rowsIndexPaths.count, 23)
+        XCTAssertEqual(table.rowsIndexPaths.first?.section, 5)
     }
 }
 extension NewsVControllerTests {
@@ -194,29 +256,48 @@ extension NewsVControllerTests {
         
         var selectWasInvoked = 0
         var selectedIndex: Int?
-        func select(at index: Int) {
+        var section: Int?
+        func select(at index: Int, section: Int) {
             selectWasInvoked += 1
+            self.section = section
             selectedIndex = index
         }
     }
     class PresenterMock: TableViewPresenter {
-        func count() -> Int {
-            return 78
+        var section: Int?
+        let hardCount = 78
+        func count(in section: Int) -> Int {
+            self.section = section
+            return hardCount
+        }
+        var sCount = 56
+        var sectionCountWasInvoked = 0
+        func sectionCount() -> Int {
+            sectionCountWasInvoked += 1
+            return sCount
         }
         var cell: NewsCellProtocol?
         var index: Int?
         var presentWasInvoked = 0
-        func present(cell: NewsCellProtocol, at index: Int) {
+        var presentSection: Int?
+        func present(cell: NewsCellProtocol, at index: Int, section: Int) {
             self.cell = cell
             self.index = index
+            presentSection = section
             presentWasInvoked += 1
+        }
+        var presentHeaderWasInvoked = 0
+        var headerSection: Int?
+        func present(header: NewsHeaderProtocol, at section: Int) {
+            presentHeaderWasInvoked += 1
+            headerSection = section
         }
     }
     class TableViewMock: UITableView {
         var dequeueWasInvoked = 0
         var cellIdentifier: String?
         var indexPath: IndexPath?
-        var cell = NewsCell()
+        var cell: UITableViewCell = NewsCell()
         override func dequeueReusableCell(withIdentifier identifier: String,
                                           for indexPath: IndexPath) -> UITableViewCell {
             dequeueWasInvoked += 1
@@ -232,9 +313,31 @@ extension NewsVControllerTests {
             deselectedIndexPath = indexPath
         }
         
-        var scrollToRowWasInvoked = 0
-        override func scrollToRow(at indexPath: IndexPath, at scrollPosition: UITableViewScrollPosition, animated: Bool) {
-            scrollToRowWasInvoked += 1
+        var insertSectionsWasInvoked = 0
+        var insertedSections: IndexSet?
+        var insertSectionsCallback: (()->())?
+        override func insertSections(_ sections: IndexSet, with animation: UITableViewRowAnimation) {
+            insertedSections = sections
+            insertSectionsWasInvoked += 1
+            insertSectionsCallback?()
+        }
+        
+        var insertRowsWasInvoked = 0
+        var rowsIndexPaths: [IndexPath] = []
+        var insertRowsCallback: (()->())?
+        override func insertRows(at indexPaths: [IndexPath], with animation: UITableViewRowAnimation) {
+            rowsIndexPaths = indexPaths
+            insertRowsWasInvoked += 1
+            insertRowsCallback?()
+        }
+        
+        var beginUpdatesWasInvoked = 0
+        override func beginUpdates() {
+            beginUpdatesWasInvoked += 1
+        }
+        var endUpdatesWasInvoked = 0
+        override func endUpdates() {
+            endUpdatesWasInvoked += 1
         }
     }
     class RefresherReceverSpy: UIViewController, NewsRefresherReceivable {

@@ -114,7 +114,8 @@ extension SourceVController: SourcePresenterView {
         }
     }
     func resetTableContentOffset() {
-        tbl.scrollToRow(at: IndexPath(row: NSNotFound, section: 0), at: .top, animated: false)
+        tbl.scrollToRow(at: IndexPath(row: NSNotFound, section: 0), at: .top,
+                        animated: false)
     }
     func displayCategory(_ category: String) {
         categoryButton.title = category

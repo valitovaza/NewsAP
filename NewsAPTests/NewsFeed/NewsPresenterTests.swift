@@ -87,6 +87,12 @@ class NewsPresenterTests: XCTestCase {
         XCTAssertEqual(cell.displayAuthorWasInvoked, 1)
     }
     
+    func testPresentCellMustFetchFromValidIndexPath() {
+        sut.present(cell: CellSpy(), at: 44, section: 33)
+        XCTAssertEqual(dataStore.section, 33)
+        XCTAssertEqual(dataStore.articleIndex, 44)
+    }
+    
     func testPresentCellMustInvokeDisplayWithGivenParametersFromDataSource() {
         let cell = configuredCell(0)
         let secondCell = configuredCell(1)
@@ -105,20 +111,57 @@ class NewsPresenterTests: XCTestCase {
     }
     
     func testCountMustBeFromDataSource() {
-        XCTAssertEqual(sut.count(), 0)
-        dataStore.add(generate2Articles())
-        XCTAssertEqual(sut.count(), 2)
+        XCTAssertEqual(sut.count(in: 0), 0)
+        dataStore.add(generate2Articles(), for: "")
+        XCTAssertEqual(sut.count(in: 45), 2)
+        XCTAssertEqual(dataStore.countSection, 45)
+    }
+    
+    func testSectionCountMustBeFromDataSource() {
+        dataStore.sCount = 44
+        XCTAssertEqual(sut.sectionCount(), 44)
     }
     
     private func configuredCell(_ index: Int) -> CellSpy {
-        dataStore.add(generate2Articles())
+        dataStore.add(generate2Articles(), for: "")
         sut.present(state: .News)
         let cell = CellSpy()
-        sut.present(cell: cell, at: index)
+        sut.present(cell: cell, at: index, section: 0)
         return cell
     }
     private func generate2Articles() -> [Article] {
         return [Article(author: "author1", title: "title1", desc: "desc1", url: "url1", urlToImage: "urlToImage1", publishedAt: "2017-05-20T18:00:56Z"), Article(author: "author2", title: "title2", desc: "desc2", url: "url2", urlToImage: "urlToImage2", publishedAt: "2017-05-07T10:00:56Z")]
+    }
+    
+    func testPresentHeaderMustDisplaySourceTitle() {
+        let spy = HeaderSpy()
+        dataStore.storedSource = "test12"
+        sut.present(header: spy, at: 5)
+        XCTAssertEqual(spy.displayTitleWasInvoked, 1)
+        XCTAssertEqual(spy.title, "test12")
+        XCTAssertEqual(dataStore.sectionForSource, 5)
+    }
+    
+    func testAddArticlesWithNewSourceMustInsertNewSource() {
+        dataStore.sCount = 100
+        sut.addArticles(change: .NewSource(45))
+        XCTAssertEqual(pView.addRowsWasInvoked, 0)
+        XCTAssertEqual(pView.insertSectionWasInvoked, 1)
+        XCTAssertEqual(pView.sectionRows, 45)
+        XCTAssertEqual(pView.insertIndex, 99)
+    }
+    
+    func testAddArticlesWithAddNewsToSourceMustAddRows() {
+        sut.addArticles(change: .AddNewsToSource(44, 45))
+        XCTAssertEqual(pView.addRowsWasInvoked, 1)
+        XCTAssertEqual(pView.addRowSection, 44)
+        XCTAssertEqual(pView.addRows, 45)
+        XCTAssertEqual(pView.insertSectionWasInvoked, 0)
+    }
+    
+    func testPresentLoadingStateMustReloadTable() {
+        sut.present(state: .Loading)
+        XCTAssertEqual((pView.tableView as! TableViewSpy).reloadDataWasInvoked, 1)
     }
 }
 extension NewsPresenterTests {
@@ -128,6 +171,30 @@ extension NewsPresenterTests {
         var resetTableContentOffsetWasInvoked = 0
         func resetTableContentOffset() {
             resetTableContentOffsetWasInvoked += 1
+        }
+        var insertSectionWasInvoked = 0
+        var sectionRows: Int?
+        var insertIndex: Int?
+        func insertSection(with rows: Int, at index: Int) {
+            insertSectionWasInvoked += 1
+            insertIndex = index
+            sectionRows = rows
+        }
+        var addRowsWasInvoked = 0
+        var addRows: Int?
+        var addRowSection: Int?
+        func addRows(_ rows: Int, to section: Int) {
+            addRowsWasInvoked += 1
+            addRows = rows
+            addRowSection = section
+        }
+    }
+    class HeaderSpy: NewsHeaderProtocol {
+        var title: String?
+        var displayTitleWasInvoked = 0
+        func displayTitle(_ title: String) {
+            self.title = title
+            displayTitleWasInvoked += 1
         }
     }
     class CellSpy: NewsCellProtocol {
@@ -172,13 +239,14 @@ extension NewsPresenterTests {
         }
     }
 }
-class TableViewSpy: UITableView {
+class TableViewSpy: Reloadable {
     var reloadDataWasInvoked = 0
     var callback: (()->())?
-    override func reloadData() {
+    func reloadData() {
         reloadDataWasInvoked += 1
         callback?()
     }
+    var isHidden: Bool = false
 }
 class AnimatorSpy: LoadingAnimatorProtocol {
     var animateLoadingWasInvoked = 0

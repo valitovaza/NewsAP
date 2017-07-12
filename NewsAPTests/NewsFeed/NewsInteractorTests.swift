@@ -215,7 +215,13 @@ class NewsInteractorTests: XCTestCase {
         prepareValidNewsResponce()
         sut.refresh()
         XCTAssertEqual(dataStore.addNewsWasInvoked, 1)
-        XCTAssertEqual(dataStore.count(), testArticles.count)
+        XCTAssertEqual(dataStore.count(for: 0), testArticles.count)
+        XCTAssertEqual(dataStore.lastSourceName, sourceHolder.sources?.last?.name)
+    }
+    
+    func testSuccessLoadWithMultipleSourcesMustSaveProperSource() {
+        setNewsFor2SourcesAndRefresh()
+        XCTAssertEqual(dataStore.lastSourceName, testSource1.name)
     }
     
     func testSuccessLoadMustSaveNewsBeforePresentNewsState() {
@@ -231,23 +237,68 @@ class NewsInteractorTests: XCTestCase {
     }
     
     func testSelectAtMustOpenUrlWithUrlFromDataSource() {
-        dataStore.add(testArticles)
-        sut.select(at: 1)
+        dataStore.add(testArticles, for: "testSource0")
+        sut.select(at: 1, section: 101)
         XCTAssertEqual(router.openArticleWasInvoked, 1)
         XCTAssertEqual(router.savedUrl, testArticles[1].url)
+        XCTAssertEqual(dataStore.section, 101)
     }
     
     func testNewsFromAllSourcesMustBeLoaded() {
         setNewsFor2SourcesAndRefresh()
-        //Loading, NewsFrom0Source, NewsFrom1Source = 3
-        XCTAssertEqual(presenter.invokedPresentStates.count, 3)
         XCTAssertEqual(loader.source, testSource1.id)
+    }
+    
+    func testPresentNewsStateMustNotBeInvokedIfDataSourceLastChangesIsNewSource() {
+        dataStore.changes = .NewSource(9)
+        setNewsFor2SourcesAndRefresh()
+        XCTAssertEqual(self.presenter.invokedPresentStates.count, 1)
+    }
+    
+    func testPresentNewsStateMustNotBeInvokedIfDataSourceLastChangesIsAddNewsToSource() {
+        dataStore.changes = .AddNewsToSource(5,9)
+        setNewsFor2SourcesAndRefresh()
+        XCTAssertEqual(self.presenter.invokedPresentStates.count, 1)
+    }
+    
+    func testFetchingNewsFromSecondSourceMustAddArticles() {
+        dataStore.changes = .NewSource(9)
+        setNewsFor2SourcesAndRefresh()
+        XCTAssertEqual(presenter.addArticlesWasInvoked, 2)
+        guard let change = presenter.savedChange else {
+            XCTFail("change not saved")
+            return
+        }
+        guard case .NewSource(let count) = change else {
+            XCTFail("not NewSource state")
+            return
+        }
+        XCTAssertEqual(count, 9)
+    }
+    
+    func testAddArticlesMustNotBeInvokedIfError() {
+        dataStore.changes = .NewSource(9)
+        sourceHolder.sources = [testSource0, testSource1]
+        prepareEmptyNewsResponce()
+        sut.refresh()
+        XCTAssertEqual(presenter.addArticlesWasInvoked, 0)
+    }
+    
+    func testEmptySourceMustNotBeSavedToDataSource() {
+        prepareEmptyNewsResponce()
+        sut.refresh()
+        XCTAssertEqual(dataStore.addNewsWasInvoked, 0)
+    }
+    
+    func testAddArticlesMustNotBeInvokedIfReloadState() {
+        setNewsFor2SourcesAndRefresh()
+        XCTAssertEqual(presenter.addArticlesWasInvoked, 0)
     }
     
     func testLoadNewsFromNextSourceMustInvokeAfterPresentingPreviousNews() {
         loader.callback = {[unowned self]_ in
             if self.loader.source == self.testSource1.id {
-                //Loading, NewsFrom0Source = 2
+                //Loading, News = 2
                 XCTAssertEqual(self.presenter.invokedPresentStates.count, 2)
             }
         }
@@ -271,7 +322,7 @@ class NewsInteractorTests: XCTestCase {
         }
     }
     
-    func testErrorStateMustNotBePresentedIfAnyArticlesInDataSource() {
+    func testErrorStateMustNotBePresentedIfDataSourceIsNotEmpty() {
         sourceHolder.sources = [testSource0, testSource1]
         sut.refresh()
         loader.savedCallback?(testArticles)
@@ -297,6 +348,12 @@ extension NewsInteractorTests {
         
         func present(state: NewsState) {
             invokedPresentStates.append(state)
+        }
+        var savedChange: NewsStoreChange?
+        var addArticlesWasInvoked = 0
+        func addArticles(change: NewsStoreChange) {
+            addArticlesWasInvoked += 1
+            savedChange = change
         }
     }
     class LoaderMock: NewsLoaderProtocol {
@@ -350,21 +407,52 @@ extension NewsInteractorTests {
 class StoreMock: ArticleDataStoreProtocol {
     var articles: [Article] = []
     var callback: (()->())? = nil
+    var lastSourceName: String? = nil
     var addNewsWasInvoked = 0
-    func add(_ articles: [Article]) {
+    func add(_ articles: [Article], for source: String) {
         callback?()
         addNewsWasInvoked += 1
         self.articles = articles
+        lastSourceName = source
     }
     var clearWasInvoked = 0
     func clear() {
         clearWasInvoked += 1
     }
+    var sCount = 0
+    func sectionCount() -> Int {
+        return sCount
+    }
     var hardCount: Int?
     func count() -> Int {
-        return hardCount ?? articles.count
+        return hardCount ?? 0
     }
-    func article(for index: Int) -> Article {
-        return articles[index]
+    var countSection: Int?
+    func count(for section: Int) -> Int {
+        countSection = section
+        return articles.count
+    }
+    var section: Int?
+    var articleIndex: Int?
+    var testArticle = Article(author: "testauthor",
+                              title: "testtitle",
+                              desc: "testdesc",
+                              url: "testurl",
+                              urlToImage: "testurlToImage",
+                              publishedAt: "testpublishedAt")
+    func article(for index: Int, in section: Int) -> Article {
+        self.section = section
+        articleIndex = index
+        return articles.count > index ? articles[index] : testArticle
+    }
+    var storedSource = ""
+    var sectionForSource: Int?
+    func source(for section: Int) -> String {
+        sectionForSource = section
+        return storedSource
+    }
+    var changes: NewsStoreChange = .Reload
+    func lastChanges() -> NewsStoreChange {
+        return changes
     }
 }

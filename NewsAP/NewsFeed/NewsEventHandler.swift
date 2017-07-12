@@ -1,6 +1,6 @@
 protocol NewsEventHandlerProtocol: NewsRefresher {
     func viewDidAppear()
-    func select(at index: Int)
+    func select(at index: Int, section: Int)
 }
 protocol NewsRefresher {
     func refresh()
@@ -44,23 +44,33 @@ class NewsInteractor: NewsEventHandlerProtocol {
         presenter.present(state: .Loading)
         loadNewsFromFirstLoadingSource()
     }
-    private func handleLoadResponse(_ articles: [Article]) {
-        store.add(articles)
-        presentState(with: articles)
+    private func handleLoadResponse(_ articles: [Article], sourceName: String) {
+        if articles.count > 0 {
+            store.add(articles, for: sourceName)
+        }
+        presentState(articles.count)
         loadNewsFromFirstLoadingSource()
     }
-    private func presentState(with articles: [Article]) {
-        if articles.count > 0 {
-            presenter.present(state: .News)
+    private func presentState(_ fetchedCount: Int) {
+        if fetchedCount > 0 {
+            presentNews()
         }else if loadingSources.count == 0 && store.count() == 0 {
             presenter.present(state: .Error)
         }
     }
+    private func presentNews() {
+        if case .Reload = store.lastChanges() {
+            presenter.present(state: .News)
+        }else{
+            presenter.addArticles(change: store.lastChanges())
+        }
+    }
     private func loadNewsFromFirstLoadingSource() {
         guard loadingSources.count > 0 else {return}
-        loader.load(loadingSources.removeFirst().id)
+        let source = loadingSources.removeFirst()
+        loader.load(source.id)
         {[weak self] (articles) in
-            self?.handleLoadResponse(articles)
+            self?.handleLoadResponse(articles, sourceName: source.name)
         }
     }
     
@@ -70,8 +80,8 @@ class NewsInteractor: NewsEventHandlerProtocol {
         }
     }
     
-    func select(at index: Int) {
-        let article = store.article(for: index)
+    func select(at index: Int, section: Int) {
+        let article = store.article(for: index, in: section)
         router.openArticle(article.url)
     }
 }

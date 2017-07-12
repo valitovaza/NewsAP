@@ -239,6 +239,7 @@ class SourceVControllerTests: XCTestCase {
         sut.resetTableContentOffset()
         XCTAssertEqual(table.scrollToRowWasInvoked, 1)
     }
+
     
     func testSetDoneEnabledMustChangeRightBarButton() {
         let btn = UIBarButtonItem()
@@ -379,6 +380,7 @@ extension SourceVControllerTests {
         override func scrollToRow(at indexPath: IndexPath, at scrollPosition: UITableViewScrollPosition, animated: Bool) {
             scrollToRowWasInvoked += 1
         }
+
     }
     class UIBarButtonItemSpy: UIBarButtonItem {
         var setTextWasInvoked = 0
