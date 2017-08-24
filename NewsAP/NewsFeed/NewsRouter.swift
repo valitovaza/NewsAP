@@ -51,6 +51,7 @@ class NewsRouter: NewsRouterProtocol {
         default: break
         }
     }
+    private let settingsActionSheetTitle = "Select Read later notification time"
     private let cancelTitle = "Cancel"
     private let actionTitlesForNotCached = ["Read later", "Share", "Open in the app"]
     private let actionTitlesForCached = ["Remove from cache", "Share", "Open in the app"]
@@ -90,7 +91,7 @@ class NewsRouter: NewsRouterProtocol {
                                completion: nil)
     }
     private func settingsActionSheet() -> UIAlertController {
-        let actionSheetController = actionSheetWithCancel()
+        let actionSheetController = actionSheetWithCancel(settingsActionSheetTitle)
         for settingsAction in newsSaver.getSettingsActions() {
             let action = Action.init(title: settingsAction.rawValue,
                                      style: .default)
@@ -101,8 +102,8 @@ class NewsRouter: NewsRouterProtocol {
         }
         return actionSheetController
     }
-    private func actionSheetWithCancel() -> UIAlertController {
-        let actionSheetController = UIAlertController(title: nil,
+    private func actionSheetWithCancel(_ title: String? = nil) -> UIAlertController {
+        let actionSheetController = UIAlertController(title: title,
                                                       message: nil,
                                                       preferredStyle: .actionSheet)
         addCancel(actionSheetController)

@@ -141,7 +141,7 @@ class NewsRouterTests: XCTestCase {
     
     func testOpenSettingsMustPresentAlertView() {
         sut.openSettings()
-        tstAlertController()
+        tstAlertController("Select Read later notification time")
     }
     
     func testOpenSettingsAlertControllerHasCancelAction() {
@@ -176,10 +176,10 @@ class NewsRouterTests: XCTestCase {
         }
     }
     
-    private func tstAlertController() {
+    private func tstAlertController(_ title: String? = nil) {
         let alertController = vp.presentedVc as? UIAlertController
         XCTAssertNotNil(alertController)
-        XCTAssertEqual(alertController?.title, nil)
+        XCTAssertEqual(alertController?.title, title)
         XCTAssertEqual(alertController?.message, nil)
         XCTAssertEqual(alertController?.preferredStyle, .actionSheet)
     }
