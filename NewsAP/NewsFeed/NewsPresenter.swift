@@ -1,18 +1,26 @@
 protocol NewsPresenterProtocol {
     func present(state: NewsState)
     func addArticles(change: NewsStoreChange)
+    func hideTopSegment()
+    func showTopSegment()
+    func switchSegment(_ segment: NewsSegment)
+    func reloadFavorite()
 }
 protocol TableViewPresenter {
     func sectionCount() -> Int
     func count(in section: Int) -> Int
     func present(cell: NewsCellProtocol, at index: Int, section: Int)
     func present(header: NewsHeaderProtocol, at section: Int)
+    func faveSectionCount() -> Int
+    func faveCount() -> Int
+    func presentFave(cell: NewsCellProtocol, at index: Int)
 }
 import Foundation
 class NewsPresenter: NewsPresenterProtocol, TableViewPresenter {
     private weak var view: PresenterView!
     private var animator: LoadingAnimatorProtocol
     var store: ArticleDataStoreProtocol!
+    var faveStore: FavoriteDataSourceProtocol!
     
     let dateFormat = "d MMM yyyy  h:mm a"
     init(_ view: PresenterView, _ animator: LoadingAnimatorProtocol) {
@@ -81,6 +89,7 @@ class NewsPresenter: NewsPresenterProtocol, TableViewPresenter {
         cell.displayAuthor(article.author)
         cell.displayImage(from: article.urlToImage)
         cell.displayOriginalSource(article.url)
+        cell.actionOpener = view
     }
     private func dateString(article: Article) -> String {
         let toStringFormatter = DateFormatter()
@@ -97,5 +106,36 @@ class NewsPresenter: NewsPresenterProtocol, TableViewPresenter {
         toDateformatter.dateFormat = Article.dateFormat
         let date = toDateformatter.date(from: article.publishedAt)
         return date ?? Date()
+    }
+    
+    func hideTopSegment() {
+        view.setTopTitleHidden(false)
+        view.setTopSegmentHidden(true)
+        view.setFaveViewHidded(true)
+    }
+    func showTopSegment() {
+        view.setTopTitleHidden(true)
+        view.setTopSegmentHidden(false)
+    }
+    
+    func switchSegment(_ segment: NewsSegment) {
+        view.setFaveViewHidded(segment == .All ? true : false)
+    }
+    
+    func faveSectionCount() -> Int {
+        return faveStore.favorites.count > 0 ? 1 : 0
+    }
+    
+    func faveCount() -> Int {
+        return faveStore.favorites.count
+    }
+    
+    func presentFave(cell: NewsCellProtocol, at index: Int) {
+        let article = faveStore.favorites[index]
+        configureCell(cell, with: article)
+    }
+    
+    func reloadFavorite() {
+        view.reloadFavorite()
     }
 }

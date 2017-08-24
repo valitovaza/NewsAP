@@ -196,39 +196,6 @@ class ActionSheetPresenterTests: XCTestCase {
     }
 }
 extension ActionSheetPresenterTests {
-    class VCMock: UIViewController {
-        var lastPresentedVc: UIViewController?
-        var animated: Bool?
-        var presentWasInvoked = 0
-        override func present(_ viewControllerToPresent: UIViewController, animated flag: Bool, completion: (() -> Void)? = nil) {
-            animated = flag
-            presentWasInvoked += 1
-            lastPresentedVc = viewControllerToPresent
-        }
-    }
-    class AlertActionMock: UIAlertAction {
-        typealias Handler = ((UIAlertAction) -> Void)
-        
-        var handler: Handler?
-        var mockTitle: String?
-        var mockStyle: UIAlertActionStyle
-        
-        convenience init(title: String?,
-                         style: UIAlertActionStyle,
-                         handler: ((UIAlertAction) -> Swift.Void)? = nil) {
-            self.init()
-            
-            mockTitle = title
-            mockStyle = style
-            self.handler = handler
-        }
-        
-        override init() {
-            mockStyle = .default
-            
-            super.init()
-        }
-    }
     class SelectionHandlerSpy: SourceParametersSelectionHandler {
         var categorySelectedWasInvoked = 0
         var savedCategory: SourceCategory?
@@ -250,5 +217,38 @@ extension ActionSheetPresenterTests {
             countrySelectedWasInvoked += 1
             savedCountry = country
         }
+    }
+}
+class VCMock: UIViewController {
+    var lastPresentedVc: UIViewController?
+    var animated: Bool?
+    var presentWasInvoked = 0
+    override func present(_ viewControllerToPresent: UIViewController, animated flag: Bool, completion: (() -> Void)? = nil) {
+        animated = flag
+        presentWasInvoked += 1
+        lastPresentedVc = viewControllerToPresent
+    }
+}
+class AlertActionMock: UIAlertAction {
+    typealias Handler = ((UIAlertAction) -> Void)
+    
+    var handler: Handler?
+    var mockTitle: String?
+    var mockStyle: UIAlertActionStyle
+    
+    convenience init(title: String?,
+                     style: UIAlertActionStyle,
+                     handler: ((UIAlertAction) -> Swift.Void)? = nil) {
+        self.init()
+        
+        mockTitle = title
+        mockStyle = style
+        self.handler = handler
+    }
+    
+    override init() {
+        mockStyle = .default
+        
+        super.init()
     }
 }

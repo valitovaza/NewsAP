@@ -15,6 +15,8 @@ extension UIImage {
     enum Asset: String {
         case DeselectedIcon = "deselectedIcon"
         case SelectedIcon = "selectedIcon"
+        case Settings = "settings"
+        case SettingsHightlighted = "settingsHightlighted"
     }
     convenience init(asset: Asset) {
         self.init(named: asset.rawValue)!

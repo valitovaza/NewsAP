@@ -8,6 +8,9 @@ class NewsInteractorTests: XCTestCase {
     var router: RouterMock!
     var sourceHolder: SourceHolderMock!
     var dataStore: StoreMock!
+    var newsSaver: NewsSaverSpy!
+    var notificationController: NotificationControllerMock!
+    var settingsHolder: SettingsHolderMock!
     
     var testArticles = [Article(author: "testauthor", title: "testtitle", desc: "testdesc", url: "testurl", urlToImage: "testurlToImage", publishedAt: "testpublishedAt"), Article(author: "testauthor1", title: "title1", desc: "desc1", url: "testurl1", urlToImage: "testurlToImage1", publishedAt: "publishedAt1")]
     let testSource0 = Source(id: "test source0",
@@ -33,11 +36,26 @@ class NewsInteractorTests: XCTestCase {
     }
     private func createVars() {
         sut = NewsInteractor()
+        createNewsSaver()
         createPresentor()
         createLoader()
         createRouter()
         createSourceHolder()
         createStore()
+        createNotificationController()
+        createSettingsHolder()
+    }
+    private func createSettingsHolder() {
+        settingsHolder = SettingsHolderMock()
+        sut.settingsHolder = settingsHolder
+    }
+    private func createNotificationController() {
+        notificationController = NotificationControllerMock()
+        sut.notificationController = notificationController
+    }
+    private func createNewsSaver() {
+        newsSaver = NewsSaverSpy()
+        sut.newsSaver = newsSaver
     }
     private func createStore() {
         dataStore = StoreMock()
@@ -104,6 +122,19 @@ class NewsInteractorTests: XCTestCase {
     func testOpenSourceMustNotInvokedIfSourceDefined() {
         sut.viewDidAppear()
         XCTAssertEqual(router.openSourcesWasInvoked, 0)
+    }
+    
+    func testDidLoadMustInvokeHideSegmentIfNoFavoriteArticles() {
+        sut.viewDidLoad()
+        XCTAssertEqual(presenter.hideTopSegmentWasInvoked, 1)
+        XCTAssertEqual(presenter.showTopSegmentWasInvoked, 0)
+    }
+    
+    func testDidLoadMustInvokeShowSegmentIfFavoriteArticlesExist() {
+        newsSaver.testFaves = testArticles
+        sut.viewDidLoad()
+        XCTAssertEqual(presenter.showTopSegmentWasInvoked, 1)
+        XCTAssertEqual(presenter.hideTopSegmentWasInvoked, 0)
     }
     
     func testOnDidAppearMustLoadOnlyOnce() {
@@ -340,119 +371,195 @@ class NewsInteractorTests: XCTestCase {
         sut.viewDidAppear()
         XCTAssertEqual(dataStore.clearWasInvoked, 1)
     }
-}
-extension NewsInteractorTests {
-    class PresenterMock: NewsPresenterProtocol {
+    
+    func testOpenActionsMustInvokeRoutersOpenArticle() {
+        sut.openActions(for: 90, section: 80)
+        XCTAssertEqual(router.savedArticle?.author, dataStore.testArticle.author)
+        XCTAssertEqual(dataStore.articleIndex, 90)
+        XCTAssertEqual(dataStore.section, 80)
+    }
+    
+    func testOpenFaveActionsMustInvokeRoutersOpenActionWithFaveArticle() {
+        newsSaver.testFaves = testArticles
+        sut.openActions(forFavorite: 1)
+        XCTAssertEqual(router.savedArticle?.title, testArticles[1].title)
+    }
+    
+    func testFavoriteMustSaveArticle() {
+        sut.favorite(testArticles.first!)
+        XCTAssertEqual(newsSaver.saveWasInvoked, 1)
+        XCTAssertEqual(newsSaver.savedArticle, testArticles.first!)
+    }
+    
+    func testFavoriteMustShowTopSegmentIfFaveArticlesExist() {
+        newsSaver.testFaves = testArticles
+        sut.favorite(testArticles.first!)
+        XCTAssertEqual(presenter.showTopSegmentWasInvoked, 1)
+        XCTAssertEqual(presenter.hideTopSegmentWasInvoked, 0)
+    }
+    
+    func testFavoriteMustHideTopSegmentIfNoFaveArticles() {
+        newsSaver.testFaves = []
+        sut.favorite(testArticles.first!)
+        XCTAssertEqual(presenter.showTopSegmentWasInvoked, 0)
+        XCTAssertEqual(presenter.hideTopSegmentWasInvoked, 1)
+    }
+    
+    func testFavoriteMustHideTopSegmentAfterSaving() {
+        newsSaver.testFaves = []
+        newsSaver.saveCallback = {[weak self] in
+            XCTAssertEqual(self?.presenter.showTopSegmentWasInvoked, 0)
+            XCTAssertEqual(self?.presenter.hideTopSegmentWasInvoked, 0)
+        }
+        sut.favorite(testArticles.first!)
+    }
+    
+    func testFavoriteMustDeleteArticleFromFavoritesIfAlreadyInFavorites() {
+        newsSaver.testFaves = testArticles
+        sut.favorite(testArticles.first!)
+        XCTAssertEqual(newsSaver.deleteWasInvoked, 1)
+        XCTAssertEqual(newsSaver.deletedArticle, testArticles.first!)
+    }
+    
+    func test0SegmentSelectedMustInvokeAllSwitchSegment() {
+        sut.segmentSelected(0)
+        XCTAssertEqual(presenter.switchSegmentWasInvoked, 1)
+        guard let segment = presenter.savedSegment else {
+            XCTFail("Segment not saved")
+            return
+        }
+        guard case .All = segment else {
+            XCTFail("not All state")
+            return
+        }
+    }
+    
+    func test1SegmentSelectedMustInvokeFavoriteSwitchSegment() {
+        sut.segmentSelected(1)
+        XCTAssertEqual(presenter.switchSegmentWasInvoked, 1)
+        guard let segment = presenter.savedSegment else {
+            XCTFail("Segment not saved")
+            return
+        }
+        guard case .Favorite = segment else {
+            XCTFail("not Favorite state")
+            return
+        }
+    }
+    
+    func testFavoriteMustInvokeReloadFaveTable() {
+        sut.favorite(testArticles.first!)
+        XCTAssertEqual(presenter.reloadFavoriteWasInvoked, 1)
+    }
+    
+    func testFavoriteMustInvokeReloadAfterSavingFavorites() {
+        newsSaver.saveCallback = {[weak self] in
+            XCTAssertEqual(self?.presenter.reloadFavoriteWasInvoked, 0)
+        }
+        sut.favorite(testArticles.first!)
+    }
+    
+    func testIsArticleAlreadyFavoritedMustCheckResultFromNewsSaver() {
+        newsSaver.testFaves = testArticles
+        XCTAssertTrue(sut.isArticleAlreadyfavorited(testArticles.first!))
         
-        var invokedPresentStates: [NewsState] = []
-        
-        func present(state: NewsState) {
-            invokedPresentStates.append(state)
+        newsSaver.testFaves = []
+        XCTAssertFalse(sut.isArticleAlreadyfavorited(testArticles.first!))
+    }
+    
+    func testFaveMustAddNotificationIfNotificationEnabled() {
+        settingsHolder.testEnabled = true
+        sut.favorite(testArticles.first!)
+        XCTAssertEqual(notificationController.removeNotificationWasInvoked, 0)
+        XCTAssertEqual(notificationController.addNotificationWasInvoked, 1)
+        XCTAssertEqual(notificationController.savedArticle, testArticles.first!)
+    }
+    
+    func testFAvoriteMustNotInvokeAddNotificationIfNotificationsDisabled() {
+        settingsHolder.testEnabled = false
+        sut.favorite(testArticles.first!)
+        XCTAssertEqual(notificationController.addNotificationWasInvoked, 0)
+    }
+    
+    func testFaveMustRemoveNotificationIfArticleAlreadyInFavorites() {
+        newsSaver.testFaves = testArticles
+        sut.favorite(testArticles.first!)
+        XCTAssertEqual(notificationController.addNotificationWasInvoked, 0)
+        XCTAssertEqual(notificationController.removeNotificationWasInvoked, 1)
+        XCTAssertEqual(notificationController.removedArticle, testArticles.first!)
+    }
+    
+    func testOpenSettingsMustInvokeRouters() {
+        sut.openSettings()
+        XCTAssertEqual(router.openSettingsWasInvoked, 1)
+    }
+    
+    func testGetSettingsMustReturnActionsWithOnIfNotificationsIsDisabled() {
+        settingsHolder.testEnabled = false
+        let actions = sut.getSettingsActions()
+        XCTAssertEqual(actions.count, 8)
+        testDisabledSettings(actions)
+    }
+    
+    func testGetSettingsMustReturnActionsWithOffIfNotificationIsEnabled() {
+        settingsHolder.testEnabled = true
+        let actions = sut.getSettingsActions()
+        XCTAssertEqual(actions.count, 8)
+        testEnabledSettings(actions)
+    }
+    
+    private func testDisabledSettings(_ actions: [NotificationSettingsActions]) {
+        XCTAssertEqual(actions[0].rawValue, NotificationSettingsActions.AM10.rawValue)
+        XCTAssertEqual(actions[1].rawValue, NotificationSettingsActions.PM3.rawValue)
+        XCTAssertEqual(actions[2].rawValue, NotificationSettingsActions.PM6.rawValue)
+        XCTAssertEqual(actions[3].rawValue, NotificationSettingsActions.PM7.rawValue)
+        XCTAssertEqual(actions[4].rawValue, NotificationSettingsActions.PM8.rawValue)
+        XCTAssertEqual(actions[5].rawValue, NotificationSettingsActions.PM9.rawValue)
+        XCTAssertEqual(actions[6].rawValue, NotificationSettingsActions.PM10.rawValue)
+        XCTAssertEqual(actions[7].rawValue, NotificationSettingsActions.On.rawValue)
+    }
+    private func testEnabledSettings(_ actions: [NotificationSettingsActions]) {
+        XCTAssertEqual(actions[0].rawValue, NotificationSettingsActions.AM10.rawValue)
+        XCTAssertEqual(actions[1].rawValue, NotificationSettingsActions.PM3.rawValue)
+        XCTAssertEqual(actions[2].rawValue, NotificationSettingsActions.PM6.rawValue)
+        XCTAssertEqual(actions[3].rawValue, NotificationSettingsActions.PM7.rawValue)
+        XCTAssertEqual(actions[4].rawValue, NotificationSettingsActions.PM8.rawValue)
+        XCTAssertEqual(actions[5].rawValue, NotificationSettingsActions.PM9.rawValue)
+        XCTAssertEqual(actions[6].rawValue, NotificationSettingsActions.PM10.rawValue)
+        XCTAssertEqual(actions[7].rawValue, NotificationSettingsActions.Off.rawValue)
+    }
+    
+    func testProcessSettingsActionMustDisableNotificationIfOffAction() {
+        sut.processSettingsAction(.Off)
+        XCTAssertEqual(notificationController.removeAllNotificationsWasInvoked, 1)
+        XCTAssertEqual(settingsHolder.setNotificationsEnabledWasInvoked, 1)
+        XCTAssertEqual(settingsHolder.savedIsEnabled, false)
+        XCTAssertEqual(notificationController.updateNotificationRequestWasInvoked, 0)
+    }
+    
+    func testProcessSettingsActionMustEnableNotificationIfOnAction() {
+        sut.processSettingsAction(.On)
+        XCTAssertEqual(notificationController.removeAllNotificationsWasInvoked, 0)
+        XCTAssertEqual(settingsHolder.setNotificationsEnabledWasInvoked, 1)
+        XCTAssertEqual(settingsHolder.savedIsEnabled, true)
+        XCTAssertEqual(notificationController.updateNotificationRequestWasInvoked, 0)
+    }
+    
+    func testProcessSettingsActionMustEnableNotificationAndChangeTimeIfTimeAction() {
+        sut.processSettingsAction(.AM10)
+        XCTAssertEqual(notificationController.removeAllNotificationsWasInvoked, 0)
+        XCTAssertEqual(settingsHolder.setNotificationsEnabledWasInvoked, 1)
+        XCTAssertEqual(settingsHolder.savedIsEnabled, true)
+        XCTAssertEqual(notificationController.updateNotificationRequestWasInvoked, 1)
+        XCTAssertEqual(settingsHolder.updateTimeWasInvoked, 1)
+        XCTAssertEqual(settingsHolder.savedHour, 10)
+        XCTAssertEqual(settingsHolder.savedMin, 0)
+    }
+    
+    func testUpdateTimeMustBeInvokedBeforeUpdateNotificationRequest() {
+        notificationController.updateCallback = {[weak self] in
+            XCTAssertEqual(self?.settingsHolder.updateTimeWasInvoked, 1)
         }
-        var savedChange: NewsStoreChange?
-        var addArticlesWasInvoked = 0
-        func addArticles(change: NewsStoreChange) {
-            addArticlesWasInvoked += 1
-            savedChange = change
-        }
-    }
-    class LoaderMock: NewsLoaderProtocol {
-        
-        var loadWasInvoked: Int = 0
-        var callback: (([Article])->())?
-        var savedCallback: (([Article])->())?
-        var testArticles: [Article] = []
-        var invokeCompletition = false
-        var source: String?
-        
-        func load(_ source: String, completition: @escaping ([Article])->()) {
-            self.source = source
-            loadCalled()
-            if invokeCompletition {
-                completition(testArticles)
-            }else{
-                savedCallback = completition
-            }
-        }
-        private func loadCalled() {
-            callback?(testArticles)
-            loadWasInvoked += 1
-        }
-    }
-    class RouterMock: NewsRouterProtocol {
-        var openSourcesWasInvoked: Int = 0
-        func openSources() {
-            openSourcesWasInvoked += 1
-        }
-        
-        var openArticleWasInvoked = 0
-        var savedUrl: String?
-        func openArticle(_ url: String) {
-            openArticleWasInvoked += 1
-            savedUrl = url
-        }
-    }
-    class SourceHolderMock: SourceHolderProtocol {
-        var sources: [Source]? = [Source(id: "test source",
-                                         name: "name",
-                                         desc: "desc",
-                                         url: "url",
-                                         category: .general,
-                                         language: .en,
-                                         country: .au,
-                                         sortBysAvailable: [])]
-        func select(source: Source) {}
-    }
-}
-class StoreMock: ArticleDataStoreProtocol {
-    var articles: [Article] = []
-    var callback: (()->())? = nil
-    var lastSourceName: String? = nil
-    var addNewsWasInvoked = 0
-    func add(_ articles: [Article], for source: String) {
-        callback?()
-        addNewsWasInvoked += 1
-        self.articles = articles
-        lastSourceName = source
-    }
-    var clearWasInvoked = 0
-    func clear() {
-        clearWasInvoked += 1
-    }
-    var sCount = 0
-    func sectionCount() -> Int {
-        return sCount
-    }
-    var hardCount: Int?
-    func count() -> Int {
-        return hardCount ?? 0
-    }
-    var countSection: Int?
-    func count(for section: Int) -> Int {
-        countSection = section
-        return articles.count
-    }
-    var section: Int?
-    var articleIndex: Int?
-    var testArticle = Article(author: "testauthor",
-                              title: "testtitle",
-                              desc: "testdesc",
-                              url: "testurl",
-                              urlToImage: "testurlToImage",
-                              publishedAt: "testpublishedAt")
-    func article(for index: Int, in section: Int) -> Article {
-        self.section = section
-        articleIndex = index
-        return articles.count > index ? articles[index] : testArticle
-    }
-    var storedSource = ""
-    var sectionForSource: Int?
-    func source(for section: Int) -> String {
-        sectionForSource = section
-        return storedSource
-    }
-    var changes: NewsStoreChange = .Reload
-    func lastChanges() -> NewsStoreChange {
-        return changes
+        sut.processSettingsAction(.AM10)
     }
 }

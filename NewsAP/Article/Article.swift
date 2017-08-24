@@ -34,3 +34,20 @@ extension Article {
 extension Article {
     static let dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
 }
+extension Article {
+    func encode() -> [String: Any] {
+        return [Article.authorKey: author,
+                Article.titleKey: title,
+                Article.descriptionKey: desc,
+                Article.urlKey: url,
+                Article.urlToImageKey: urlToImage,
+                Article.publishedAtKey: publishedAt]
+    }
+}
+extension Article: Equatable {
+    static func == (lhs: Article, rhs: Article) -> Bool {
+        return lhs.publishedAt == rhs.publishedAt &&
+            lhs.title == rhs.title &&
+            lhs.url == rhs.url
+    }
+}

@@ -4,6 +4,7 @@ class NewsConfiguratorTests: XCTestCase {
     
     var sut: NewsConfigurator!
     var nvc: NewsVController!
+    var laView: UIView!
     
     override func setUp() {
         super.setUp()
@@ -13,11 +14,14 @@ class NewsConfiguratorTests: XCTestCase {
     private func createVc() {
         nvc = NewsVController()
         nvc.view = UIView()
+        laView = UIView()
+        nvc.loadAnimationView = laView
     }
     
     override func tearDown() {
         sut = nil
         nvc = nil
+        laView = nil
         super.tearDown()
     }
     
@@ -33,6 +37,37 @@ class NewsConfiguratorTests: XCTestCase {
         sut.configure(nvc)
         let interactor = nvc.eventHandler as? NewsInteractor
         XCTAssertNotNil(interactor?.store)
+    }
+    
+    func testConfigureMustSetSettingsHolder() {
+        sut.configure(nvc)
+        let interactor = nvc.eventHandler as? NewsInteractor
+        XCTAssertNotNil(interactor?.settingsHolder)
+    }
+    
+    func testConfigureMustSetFaveStoreForPresenter() {
+        sut.configure(nvc)
+        let presenter = nvc.cellPresenter as? NewsPresenter
+        XCTAssertNotNil(presenter?.faveStore as? FavoriteNewsCache)
+    }
+    
+    func testConfigureMustSetNotificationController() {
+        sut.configure(nvc)
+        let interactor = nvc.eventHandler as? NewsInteractor
+        XCTAssertNotNil(interactor?.notificationController as? LocalNotificationController)
+    }
+    
+    func testConfigureMustSetRoutersNewsSaver() {
+        sut.configure(nvc)
+        let interactor = nvc.eventHandler as? NewsInteractor
+        let router = interactor?.router as? NewsRouter
+        XCTAssertNotNil(router?.newsSaver)
+    }
+    
+    func testConfigureMustSetInteractorsNewsSaver() {
+        sut.configure(nvc)
+        let interactor = nvc.eventHandler as? NewsInteractor
+        XCTAssertNotNil(interactor?.newsSaver)
     }
     
     func testConfigureMustInitLoader() {

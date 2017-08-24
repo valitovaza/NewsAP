@@ -56,6 +56,10 @@ class NewsVControllerTests: XCTestCase {
         XCTAssertNotNil(sut.errView)
     }
     
+    func testRefreshButtonSaved() {
+        XCTAssertEqual(sut.refreshBarButtonItem, sut.navigationItem.leftBarButtonItem)
+    }
+    
     func testTableConfigurations() {
         XCTAssertEqual(sut.tbl.estimatedRowHeight, NewsVController.sctimatedRowHeight)
         XCTAssertEqual(sut.tbl.rowHeight, UITableViewAutomaticDimension)
@@ -90,6 +94,10 @@ class NewsVControllerTests: XCTestCase {
     
     func testEventHandlerExist() {
         XCTAssertNotNil(sut.eventHandler)
+    }
+    
+    func testViewDidLoadMustInvokeEventHandlersViewDidLoad() {
+        XCTAssertEqual(eventHandler.viewDidLoadWasInvoked, 1)
     }
     
     func testEventViewDidAppearNotExecuteInViewDidLoad() {
@@ -233,6 +241,152 @@ class NewsVControllerTests: XCTestCase {
         XCTAssertEqual(table.rowsIndexPaths.count, 23)
         XCTAssertEqual(table.rowsIndexPaths.first?.section, 5)
     }
+    
+    func testOpenActionsMustInvokeEventHandlersOpenActions() {
+        let table = TableViewMock()
+        sut.tableView = table
+        sut.openActions(for: UITableViewCell())
+        XCTAssertEqual(eventHandler.openActionsWasInvoked, 1)
+    }
+    
+    func testOpenActionsMustGetIndexPathFromTableView() {
+        let table = TableViewMock()
+        sut.tableView = table
+        sut.openActions(for: UITableViewCell())
+        XCTAssertEqual(eventHandler.openActionsIndex, table.testRow)
+        XCTAssertEqual(eventHandler.openActionsSection, table.testRow)
+    }
+    
+    func testSegmentActionMustInvokeSegmentSelected() {
+        sut.topSegment.selectedSegmentIndex = 1
+        sut.segmentAction(UIView())
+        XCTAssertEqual(eventHandler.segmentSelectedWasInvoked, 1)
+        XCTAssertEqual(eventHandler.segmentIndex, 1)
+        
+        sut.topSegment.selectedSegmentIndex = 0
+        sut.segmentAction(UIView())
+        XCTAssertEqual(eventHandler.segmentSelectedWasInvoked, 2)
+        XCTAssertEqual(eventHandler.segmentIndex, 0)
+    }
+    
+    func testSetTopTitleHiddenMustHideOrShowTopLabel() {
+        sut.setTopTitleHidden(true)
+        XCTAssertTrue(sut.topTitle.isHidden)
+        
+        sut.setTopTitleHidden(false)
+        XCTAssertFalse(sut.topTitle.isHidden)
+    }
+    
+    func testSetfaveViewHiddenMustHideOrShowFaveView() {
+        sut.setFaveViewHidded(true)
+        XCTAssertTrue(sut.faveView.isHidden)
+        
+        sut.setFaveViewHidded(false)
+        XCTAssertFalse(sut.faveView.isHidden)
+    }
+    
+    func testSetTopSegmentHiddenMustHideOrShowTopSegment() {
+        sut.setTopSegmentHidden(true)
+        XCTAssertTrue(sut.topSegment.isHidden)
+        
+        sut.setTopSegmentHidden(false)
+        XCTAssertFalse(sut.topSegment.isHidden)
+    }
+    
+    func testSetTopSegmentHiddenTrueMustSelectFirstSegment() {
+        sut.topSegment.selectedSegmentIndex = 1
+        sut.setTopSegmentHidden(true)
+        XCTAssertEqual(sut.topSegment.selectedSegmentIndex, 0)
+    }
+    
+    func testSetTopSegmentHiddenfalseMustNotAffectSelectedSegment() {
+        sut.topSegment.selectedSegmentIndex = 1
+        sut.setTopSegmentHidden(false)
+        XCTAssertEqual(sut.topSegment.selectedSegmentIndex, 1)
+    }
+    
+    func testSetFaveViewHiddenTrueMustEnableTopNavigationButtons() {
+        sut.setFaveViewHidded(true)
+        XCTAssertEqual(sut.navigationItem.rightBarButtonItem?.isEnabled, true)
+        XCTAssertEqual(sut.navigationItem.leftBarButtonItem?.isEnabled, true)
+        XCTAssertEqual(sut.navigationItem.leftBarButtonItem, sut.refreshBarButtonItem)
+    }
+    
+    func testSetfaveViewHiddenFalseMustDisableTopNavigationButtons() {
+        sut.navigationItem.rightBarButtonItem?.isEnabled = false
+        sut.setFaveViewHidded(false)
+        XCTAssertEqual(sut.navigationItem.rightBarButtonItem?.isEnabled, false)
+        XCTAssertEqual(sut.navigationItem.leftBarButtonItem?.isEnabled, true)
+        XCTAssertNotEqual(sut.navigationItem.leftBarButtonItem, sut.refreshBarButtonItem)
+    }
+    
+    func testSettingsButtonMustHaveAction() {
+        sut.setFaveViewHidded(false)
+        let leftButton = sut.navigationItem.leftBarButtonItem?.customView as? UIButton
+        XCTAssertEqual(leftButton?.actions(forTarget: sut,
+                                          forControlEvent: .touchUpInside)?.first,
+                       "openNotificationSettings")
+    }
+    
+    func testNumberOfSectionsMustReturnFaveSectionCountIfTableviewIsFaveTable() {
+        XCTAssertEqual(sut.numberOfSections(in: sut.faveTbl), cellPresenter.faveSCount)
+    }
+    
+    func testNumbersOfRowInSectionMustReturnFaveCountIfTableViewIsFaveTable() {
+        XCTAssertEqual(sut.tableView(sut.faveTbl, numberOfRowsInSection: 0), cellPresenter.fvCount)
+    }
+    
+    func testCellForRowMustPresetFaveCellIfTableViewIsFavorite() {
+        _=sut.tableView(sut.faveTbl, cellForRowAt: indexPath)
+        XCTAssertEqual(cellPresenter.presentFaveWasInvoked, 1)
+        XCTAssertEqual(cellPresenter.presentedFaveIndex, 4)
+    }
+    
+    func testViewForHeaderInSectionReturnNilIftableViewIsFavorite() {
+        XCTAssertNil(sut.tableView(sut.faveTbl, viewForHeaderInSection: 89))
+    }
+    
+    func testHeightForHeaderMustReturn0IfTableViewIsFavorite() {
+        XCTAssertEqual(sut.tableView(sut.faveTbl, heightForHeaderInSection: 0), 0)
+    }
+    
+    func testReloadFavoriteMustReloadTableView() {
+        let tbl = TableViewMock()
+        sut.faveTbl = tbl
+        sut.reloadFavorite()
+        XCTAssertEqual(tbl.reloadDataWasInvoked, 1)
+    }
+    
+    func testOpenActionsMustRetrieveCellFromFaveTableIfselectedSegmentIs1() {
+        sut.topSegment.selectedSegmentIndex = 1
+        let tbl = TableViewMock()
+        sut.faveTbl = tbl
+        sut.openActions(for: UITableViewCell())
+        XCTAssertEqual(tbl.indexPathForCellWasInvoked, 1)
+    }
+    
+    func testOpenActionsMustRetrieveCellFromAllTableViewIfselectedSegmentIs0() {
+        sut.topSegment.selectedSegmentIndex = 0
+        let tbl = TableViewMock()
+        sut.tableView = tbl
+        sut.openActions(for: UITableViewCell())
+        XCTAssertEqual(tbl.indexPathForCellWasInvoked, 1)
+    }
+    
+    func testOpenActionsMustInvokeOpenActionsForFavoritesIfSelectedSegmentIs1() {
+        let table = TableViewMock()
+        sut.tableView = table
+        sut.faveTbl = table
+        sut.topSegment.selectedSegmentIndex = 1
+        sut.openActions(for: UITableViewCell())
+        XCTAssertEqual(eventHandler.openActionsWasInvoked, 0)
+        XCTAssertEqual(eventHandler.openActionsForFaveWasInvoked, 1)
+    }
+    
+    func testOpenNotificationSettingsMustInvokeOpenSettings() {
+        sut.openNotificationSettings()
+        XCTAssertEqual(eventHandler.openSettingsWasInvoked, 1)
+    }
 }
 extension NewsVControllerTests {
     class ConfiguratorMock: NewsConfiguratorProtocol {
@@ -242,6 +396,11 @@ extension NewsVControllerTests {
         }
     }
     class EventHandlerMock: NewsEventHandlerProtocol {
+        var viewDidLoadWasInvoked = 0
+        func viewDidLoad() {
+            viewDidLoadWasInvoked += 1
+        }
+        
         var viewDidAppearWasInvoked: Int = 0
         var onDidAppear: (()->())?
         func viewDidAppear() {
@@ -261,6 +420,34 @@ extension NewsVControllerTests {
             selectWasInvoked += 1
             self.section = section
             selectedIndex = index
+        }
+        
+        var openActionsIndex: Int?
+        var openActionsSection: Int?
+        var openActionsWasInvoked = 0
+        func openActions(for index: Int, section: Int) {
+            openActionsWasInvoked += 1
+            openActionsIndex = index
+            openActionsSection = section
+        }
+        
+        var openActionsForFaveWasInvoked = 0
+        var openFaveIndex: Int?
+        func openActions(forFavorite index: Int) {
+            openActionsForFaveWasInvoked += 1
+            openFaveIndex = index
+        }
+        
+        var segmentSelectedWasInvoked = 0
+        var segmentIndex: Int?
+        func segmentSelected(_ index: Int) {
+            segmentIndex = index
+            segmentSelectedWasInvoked += 1
+        }
+        
+        var openSettingsWasInvoked = 0
+        func openSettings() {
+            openSettingsWasInvoked += 1
         }
     }
     class PresenterMock: TableViewPresenter {
@@ -291,6 +478,23 @@ extension NewsVControllerTests {
         func present(header: NewsHeaderProtocol, at section: Int) {
             presentHeaderWasInvoked += 1
             headerSection = section
+        }
+        
+        var faveSCount = 560
+        func faveSectionCount() -> Int {
+            return faveSCount
+        }
+        
+        var fvCount = 34
+        func faveCount() -> Int {
+            return fvCount
+        }
+        
+        var presentFaveWasInvoked = 0
+        var presentedFaveIndex: Int?
+        func presentFave(cell: NewsCellProtocol, at index: Int) {
+            presentFaveWasInvoked += 1
+            presentedFaveIndex = index
         }
     }
     class TableViewMock: UITableView {
@@ -338,6 +542,18 @@ extension NewsVControllerTests {
         var endUpdatesWasInvoked = 0
         override func endUpdates() {
             endUpdatesWasInvoked += 1
+        }
+        
+        var testRow = 90
+        var indexPathForCellWasInvoked = 0
+        override func indexPath(for cell: UITableViewCell) -> IndexPath? {
+            indexPathForCellWasInvoked += 1
+            return IndexPath(row: testRow, section: testRow)
+        }
+        
+        var reloadDataWasInvoked = 0
+        override func reloadData() {
+            reloadDataWasInvoked += 1
         }
     }
     class RefresherReceverSpy: UIViewController, NewsRefresherReceivable {

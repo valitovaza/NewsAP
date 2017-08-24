@@ -11,6 +11,12 @@ class ArticleTests: XCTestCase, JsonTestable {
     private let urlToImage = "https://cdn0.tnwcdn.com/wp-content/blogs.dir/1/files/2017/05/084f67a7daa653343a69ff34b72636f6.jpg"
     private let publishedAt = "2017-05-01T23:21:20Z"
     private var validDict = [String: Any]()
+    private let testArticle = Article(author: "testauthor",
+                                      title: "testtitle",
+                                      desc: "testdesc",
+                                      url: "http://google.com",
+                                      urlToImage: "testurlToImage",
+                                      publishedAt: "testpublishedAt")
     
     // MARK: - Test variables
     
@@ -80,6 +86,29 @@ class ArticleTests: XCTestCase, JsonTestable {
         calendar.timeZone = dateFormatter.timeZone
         calendar.locale = dateFormatter.locale
         return calendar
+    }
+    
+    func testEncodeMustProvideConvertableDictionary() {
+        let article = Article(validDict)
+        if let dict = article?.encode() {
+            let tArticle = Article(dict)
+            compareArticles(l: article, r: tArticle)
+        }else{
+            XCTFail("Invalid dictionary produced")
+        }
+    }
+    private func compareArticles(l: Article?, r: Article?) {
+        XCTAssertEqual(l?.author, r?.author)
+        XCTAssertEqual(l?.title, r?.title)
+        XCTAssertEqual(l?.desc, r?.desc)
+        XCTAssertEqual(l?.url, r?.url)
+        XCTAssertEqual(l?.urlToImage, r?.urlToImage)
+        XCTAssertEqual(l?.publishedAt, r?.publishedAt)
+    }
+    
+    func testCompareArticles() {
+        XCTAssertEqual(sut, sut)
+        XCTAssertNotEqual(testArticle, sut)
     }
     
     // MARK: - Auxiliary methods

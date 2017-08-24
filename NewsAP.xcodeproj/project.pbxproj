@@ -42,6 +42,8 @@
 		563B20171ED3EE2B00423C05 /* SourceLoaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 563B20161ED3EE2B00423C05 /* SourceLoaderTests.swift */; };
 		5650DF661F149AB700F48B8B /* NewsHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5650DF651F149AB700F48B8B /* NewsHeader.swift */; };
 		5650DF681F149C4A00F48B8B /* NewsHeaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5650DF671F149C4A00F48B8B /* NewsHeaderTests.swift */; };
+		5655ADE51F4C3A7C00439567 /* FavoriteNewsCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5655ADE41F4C3A7C00439567 /* FavoriteNewsCache.swift */; };
+		5655ADE71F4C3BB500439567 /* FavoriteNewsCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5655ADE61F4C3BB500439567 /* FavoriteNewsCacheTests.swift */; };
 		565721CA1EDC588A000AC95B /* LoadingAnimatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565721C91EDC588A000AC95B /* LoadingAnimatorTests.swift */; };
 		565721CC1EDC6484000AC95B /* trail_loading.json in Resources */ = {isa = PBXBuildFile; fileRef = 565721CB1EDC6484000AC95B /* trail_loading.json */; };
 		565AB9161ECF3CB300283823 /* SourceHolderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565AB9151ECF3CB300283823 /* SourceHolderTests.swift */; };
@@ -64,6 +66,14 @@
 		56A3AAA31ED562E000C27227 /* SourceParameterHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56A3AAA21ED562E000C27227 /* SourceParameterHolder.swift */; };
 		56A3AAA51ED564AD00C27227 /* SourceParameterHolderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56A3AAA41ED564AD00C27227 /* SourceParameterHolderTests.swift */; };
 		56B18C281ECEC34A00F277F8 /* SourceHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56B18C271ECEC34A00F277F8 /* SourceHolder.swift */; };
+		56BD0B9D1F4D54A500BB5325 /* NewsCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 56BD0B9C1F4D54A500BB5325 /* NewsCell.xib */; };
+		56BD0B9F1F4D830700BB5325 /* LocalNotificationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56BD0B9E1F4D830700BB5325 /* LocalNotificationController.swift */; };
+		56BD0BA31F4D867900BB5325 /* LocalNotificationControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56BD0BA21F4D867900BB5325 /* LocalNotificationControllerTests.swift */; };
+		56BD0BA51F4E9BB700BB5325 /* NewsInteractorMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56BD0BA41F4E9BB700BB5325 /* NewsInteractorMocks.swift */; };
+		56BD0BA71F4EAB5F00BB5325 /* SettingsHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56BD0BA61F4EAB5F00BB5325 /* SettingsHolder.swift */; };
+		56BD0BA91F4EABB100BB5325 /* SettingsHolderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56BD0BA81F4EABB100BB5325 /* SettingsHolderTests.swift */; };
+		56BD0BAB1F4EB90A00BB5325 /* NotificationSettingsActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56BD0BAA1F4EB90A00BB5325 /* NotificationSettingsActions.swift */; };
+		56BD0BAD1F4EB93300BB5325 /* NotificationSettingsActionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56BD0BAC1F4EB93300BB5325 /* NotificationSettingsActionsTests.swift */; };
 		56E48D3C1EE47DA70007F9D5 /* NewsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56E48D3B1EE47DA70007F9D5 /* NewsStore.swift */; };
 		56E48D3E1EE487290007F9D5 /* NewsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56E48D3D1EE487290007F9D5 /* NewsStoreTests.swift */; };
 		56F0962D1EDC1EFC007F7C9C /* SourceConfiguratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56F0962C1EDC1EFC007F7C9C /* SourceConfiguratorTests.swift */; };
@@ -119,6 +129,8 @@
 		563B20161ED3EE2B00423C05 /* SourceLoaderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SourceLoaderTests.swift; sourceTree = "<group>"; };
 		5650DF651F149AB700F48B8B /* NewsHeader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewsHeader.swift; sourceTree = "<group>"; };
 		5650DF671F149C4A00F48B8B /* NewsHeaderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewsHeaderTests.swift; sourceTree = "<group>"; };
+		5655ADE41F4C3A7C00439567 /* FavoriteNewsCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FavoriteNewsCache.swift; sourceTree = "<group>"; };
+		5655ADE61F4C3BB500439567 /* FavoriteNewsCacheTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FavoriteNewsCacheTests.swift; sourceTree = "<group>"; };
 		565721C91EDC588A000AC95B /* LoadingAnimatorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoadingAnimatorTests.swift; sourceTree = "<group>"; };
 		565721CB1EDC6484000AC95B /* trail_loading.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = trail_loading.json; sourceTree = "<group>"; };
 		565AB9151ECF3CB300283823 /* SourceHolderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SourceHolderTests.swift; sourceTree = "<group>"; };
@@ -141,6 +153,14 @@
 		56A3AAA21ED562E000C27227 /* SourceParameterHolder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SourceParameterHolder.swift; sourceTree = "<group>"; };
 		56A3AAA41ED564AD00C27227 /* SourceParameterHolderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SourceParameterHolderTests.swift; sourceTree = "<group>"; };
 		56B18C271ECEC34A00F277F8 /* SourceHolder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SourceHolder.swift; sourceTree = "<group>"; };
+		56BD0B9C1F4D54A500BB5325 /* NewsCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = NewsCell.xib; sourceTree = "<group>"; };
+		56BD0B9E1F4D830700BB5325 /* LocalNotificationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalNotificationController.swift; sourceTree = "<group>"; };
+		56BD0BA21F4D867900BB5325 /* LocalNotificationControllerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalNotificationControllerTests.swift; sourceTree = "<group>"; };
+		56BD0BA41F4E9BB700BB5325 /* NewsInteractorMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewsInteractorMocks.swift; sourceTree = "<group>"; };
+		56BD0BA61F4EAB5F00BB5325 /* SettingsHolder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsHolder.swift; sourceTree = "<group>"; };
+		56BD0BA81F4EABB100BB5325 /* SettingsHolderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsHolderTests.swift; sourceTree = "<group>"; };
+		56BD0BAA1F4EB90A00BB5325 /* NotificationSettingsActions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NotificationSettingsActions.swift; sourceTree = "<group>"; };
+		56BD0BAC1F4EB93300BB5325 /* NotificationSettingsActionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NotificationSettingsActionsTests.swift; sourceTree = "<group>"; };
 		56E48D3B1EE47DA70007F9D5 /* NewsStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewsStore.swift; sourceTree = "<group>"; };
 		56E48D3D1EE487290007F9D5 /* NewsStoreTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewsStoreTests.swift; sourceTree = "<group>"; };
 		56F0962C1EDC1EFC007F7C9C /* SourceConfiguratorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SourceConfiguratorTests.swift; sourceTree = "<group>"; };
@@ -187,17 +207,22 @@
 		5609A5541ECC1DCF00545AD8 /* NewsFeed */ = {
 			isa = PBXGroup;
 			children = (
+				560ED9261ED1C24700D4DCCE /* NewsConfiguratorTests.swift */,
 				5609A5551ECC1DEE00545AD8 /* NewsVControllerTests.swift */,
 				5609A55E1ECC38CA00545AD8 /* NewsInteractorTests.swift */,
+				56BD0BA41F4E9BB700BB5325 /* NewsInteractorMocks.swift */,
+				56BD0BAC1F4EB93300BB5325 /* NotificationSettingsActionsTests.swift */,
+				56BD0BA21F4D867900BB5325 /* LocalNotificationControllerTests.swift */,
 				560D82A51ECD592A003952C0 /* NewsLoaderTests.swift */,
 				565721C91EDC588A000AC95B /* LoadingAnimatorTests.swift */,
 				56E48D3D1EE487290007F9D5 /* NewsStoreTests.swift */,
 				565AB9151ECF3CB300283823 /* SourceHolderTests.swift */,
+				56BD0BA81F4EABB100BB5325 /* SettingsHolderTests.swift */,
 				565AB9171ECF462700283823 /* NewsRouterTests.swift */,
 				560ED9241ED19F9300D4DCCE /* NewsPresenterTests.swift */,
-				560ED9261ED1C24700D4DCCE /* NewsConfiguratorTests.swift */,
 				565AB9191ECF583F00283823 /* NewsCellTests.swift */,
 				5650DF671F149C4A00F48B8B /* NewsHeaderTests.swift */,
+				5655ADE61F4C3BB500439567 /* FavoriteNewsCacheTests.swift */,
 			);
 			path = NewsFeed;
 			sourceTree = "<group>";
@@ -206,16 +231,21 @@
 			isa = PBXGroup;
 			children = (
 				5609A55A1ECC28CC00545AD8 /* NewsConfigurator.swift */,
+				5609A5581ECC20E200545AD8 /* NewsVController.swift */,
 				5609A55C1ECC351700545AD8 /* NewsEventHandler.swift */,
+				56BD0BAA1F4EB90A00BB5325 /* NotificationSettingsActions.swift */,
+				56BD0B9E1F4D830700BB5325 /* LocalNotificationController.swift */,
 				560D82A31ECD55A0003952C0 /* NewsLoader.swift */,
 				56E48D3B1EE47DA70007F9D5 /* NewsStore.swift */,
 				56B18C271ECEC34A00F277F8 /* SourceHolder.swift */,
+				56BD0BA61F4EAB5F00BB5325 /* SettingsHolder.swift */,
 				560D829F1ECD5568003952C0 /* NewsPresenter.swift */,
 				560ED9281ED1D52E00D4DCCE /* LoadingAnimator.swift */,
 				560D82A11ECD5582003952C0 /* NewsRouter.swift */,
-				5609A5581ECC20E200545AD8 /* NewsVController.swift */,
 				565AB91B1ECF590900283823 /* NewsCell.swift */,
+				56BD0B9C1F4D54A500BB5325 /* NewsCell.xib */,
 				5650DF651F149AB700F48B8B /* NewsHeader.swift */,
+				5655ADE41F4C3A7C00439567 /* FavoriteNewsCache.swift */,
 			);
 			path = NewsFeed;
 			sourceTree = "<group>";
@@ -442,6 +472,7 @@
 			files = (
 				563467311EB8441500BE58A4 /* LaunchScreen.storyboard in Resources */,
 				5634672E1EB8441500BE58A4 /* Assets.xcassets in Resources */,
+				56BD0B9D1F4D54A500BB5325 /* NewsCell.xib in Resources */,
 				5634672C1EB8441500BE58A4 /* Main.storyboard in Resources */,
 				565721CC1EDC6484000AC95B /* trail_loading.json in Resources */,
 			);
@@ -517,6 +548,7 @@
 				563467271EB8441500BE58A4 /* AppDelegate.swift in Sources */,
 				560F3BDE1ECAC24400EA9D0F /* ApiConsts.swift in Sources */,
 				5609A5591ECC20E200545AD8 /* NewsVController.swift in Sources */,
+				56BD0B9F1F4D830700BB5325 /* LocalNotificationController.swift in Sources */,
 				568349671ED2DF0C0082DCD9 /* SourceConfigurator.swift in Sources */,
 				560ED9291ED1D52E00D4DCCE /* LoadingAnimator.swift in Sources */,
 				5609A55D1ECC351700545AD8 /* NewsEventHandler.swift in Sources */,
@@ -530,13 +562,16 @@
 				561523D21EE6684500946B89 /* ApiKey.swift in Sources */,
 				567172261EE1AC110091A795 /* NetworkActivityListener.swift in Sources */,
 				560D82A01ECD5568003952C0 /* NewsPresenter.swift in Sources */,
+				5655ADE51F4C3A7C00439567 /* FavoriteNewsCache.swift in Sources */,
 				563B200F1ED3E02200423C05 /* SourceLoader.swift in Sources */,
 				568349651ED2D8900082DCD9 /* SourceVController.swift in Sources */,
 				5650DF661F149AB700F48B8B /* NewsHeader.swift in Sources */,
+				56BD0BAB1F4EB90A00BB5325 /* NotificationSettingsActions.swift in Sources */,
 				563B20131ED3E06200423C05 /* SourceDataProvider.swift in Sources */,
 				563B20111ED3E04E00423C05 /* SourcePresenter.swift in Sources */,
 				560F3BD61ECAA16E00EA9D0F /* Source.swift in Sources */,
 				56A3AA9F1ED52E7D00C27227 /* SourceCell.swift in Sources */,
+				56BD0BA71F4EAB5F00BB5325 /* SettingsHolder.swift in Sources */,
 				560F3BCE1ECA0E7500EA9D0F /* ArticleResponse.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -546,11 +581,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				5634674A1EB8458F00BE58A4 /* ArticleTests.swift in Sources */,
+				56BD0BA51F4E9BB700BB5325 /* NewsInteractorMocks.swift in Sources */,
 				56F0962D1EDC1EFC007F7C9C /* SourceConfiguratorTests.swift in Sources */,
 				563B20151ED3E53200423C05 /* SourceDataProviderTests.swift in Sources */,
 				560ED9271ED1C24700D4DCCE /* NewsConfiguratorTests.swift in Sources */,
 				568349691ED2E1A40082DCD9 /* SourceInteractorTests.swift in Sources */,
+				56BD0BA91F4EABB100BB5325 /* SettingsHolderTests.swift in Sources */,
 				560F3BCC1ECA0B3A00EA9D0F /* ArticleResponseTests.swift in Sources */,
+				56BD0BAD1F4EB93300BB5325 /* NotificationSettingsActionsTests.swift in Sources */,
 				5609A55F1ECC38CA00545AD8 /* NewsInteractorTests.swift in Sources */,
 				5650DF681F149C4A00F48B8B /* NewsHeaderTests.swift in Sources */,
 				560ED9251ED19F9300D4DCCE /* NewsPresenterTests.swift in Sources */,
@@ -563,12 +601,14 @@
 				568349631ED2D85A0082DCD9 /* SourceVControllerTests.swift in Sources */,
 				56A3AAA51ED564AD00C27227 /* SourceParameterHolderTests.swift in Sources */,
 				560F3BD31ECA175E00EA9D0F /* SourceTests.swift in Sources */,
+				56BD0BA31F4D867900BB5325 /* LocalNotificationControllerTests.swift in Sources */,
 				560F3BDA1ECAB65000EA9D0F /* SourceResponseTests.swift in Sources */,
 				560F3BD81ECAAB4900EA9D0F /* JsonTestable.swift in Sources */,
 				565AB9181ECF462700283823 /* NewsRouterTests.swift in Sources */,
 				5609A5561ECC1DEE00545AD8 /* NewsVControllerTests.swift in Sources */,
 				565721CA1EDC588A000AC95B /* LoadingAnimatorTests.swift in Sources */,
 				560D82A61ECD592A003952C0 /* NewsLoaderTests.swift in Sources */,
+				5655ADE71F4C3BB500439567 /* FavoriteNewsCacheTests.swift in Sources */,
 				56E48D3E1EE487290007F9D5 /* NewsStoreTests.swift in Sources */,
 				56A3AAA11ED539D800C27227 /* SourcePresenterTests.swift in Sources */,
 			);

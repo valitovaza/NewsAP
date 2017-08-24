@@ -9,9 +9,11 @@ class NewsCellTests: XCTestCase {
     let altAuthor = "test Author"
     
     var sut: NewsCell!
+    var actionsOpener: ActionOpenerMoc!
     
     override func setUp() {
         super.setUp()
+        actionsOpener = ActionOpenerMoc()
         createSut()
     }
     
@@ -20,10 +22,12 @@ class NewsCellTests: XCTestCase {
         let vc = storyboard.instantiateViewController(withIdentifier: "NewsVController") as! NewsVController
         _ = vc.view
         sut = vc.tbl.dequeueReusableCell(withIdentifier: NewsVController.newsCellIdentifier) as! NewsCell
+        sut.actionOpener = actionsOpener
     }
     
     override func tearDown() {
         sut = nil
+        actionsOpener = nil
         super.tearDown()
     }
     
@@ -38,6 +42,35 @@ class NewsCellTests: XCTestCase {
         XCTAssertNotNil(sut.nDate)
         XCTAssertNotNil(sut.nDesc)
         XCTAssertNotNil(sut.nAuthor)
+        XCTAssertNotNil(sut.nActions)
+    }
+    
+    func testActionsActionNotNil() {
+        XCTAssertEqual(sut.nActions.actions(forTarget: sut,
+                                            forControlEvent: .touchUpInside)?.first,
+                       "openActions:")
+    }
+    
+    func testOpenActionsMustInvokeSelector() {
+        sut.openActions(UIButton())
+        XCTAssertEqual(actionsOpener.savedCell, sut)
+        XCTAssertEqual(actionsOpener.openActionsWasInvoked, 1)
+    }
+    
+    func testActionOpenerNotNil() {
+        XCTAssertNotNil(sut.actionOpener)
+    }
+    
+    func testRetainCycle_WeakReferences() {
+        var lSut: NewsCell? = NewsCell()
+        var ao: CellsOpenActionProtocol? = ActionOpenerMoc()
+        lSut?.actionOpener = ao
+        weak var weakSut = lSut
+        weak var weakAOpener = ao
+        lSut = nil
+        ao = nil
+        XCTAssertNil(weakAOpener)
+        XCTAssertNil(weakSut)
     }
     
     func testDisplayTitleChangesTitle() {
@@ -134,5 +167,13 @@ class LabelSpy: UILabel {
         didSet {
             setTextWasInvoked += 1
         }
+    }
+}
+class ActionOpenerMoc: CellsOpenActionProtocol {
+    var savedCell: UITableViewCell?
+    var openActionsWasInvoked = 0
+    func openActions(for cell: UITableViewCell) {
+        savedCell = cell
+        openActionsWasInvoked += 1
     }
 }

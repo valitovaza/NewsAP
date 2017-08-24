@@ -6,17 +6,21 @@ class NewsPresenterTests: XCTestCase {
     var pView: ViewSpy!
     var animator: AnimatorSpy!
     var dataStore: StoreMock!
+    var faveStore: FaveStoreMock!
     
     override func setUp() {
         super.setUp()
         pView = ViewSpy()
         animator = AnimatorSpy()
         sut = NewsPresenter(pView, animator)
-        createStore()
+        createStores()
     }
-    private func createStore() {
+    private func createStores() {
         dataStore = StoreMock()
         sut.store = dataStore
+        
+        faveStore = FaveStoreMock()
+        sut.faveStore = faveStore
     }
     
     override func tearDown() {
@@ -104,6 +108,11 @@ class NewsPresenterTests: XCTestCase {
         XCTAssertEqual(cell.savedSource, "url1")
     }
     
+    func testPresentCellMustSetActionOpener() {
+        let cell = configuredCell(0)
+        XCTAssertTrue(cell.actionOpener as? ViewSpy === pView)
+    }
+    
     func testPresentCellMustInvokeDisplayImageForUrl() {
         let cell = configuredCell(0)
         XCTAssertEqual(cell.displayImageWasInvoked, 1)
@@ -163,6 +172,69 @@ class NewsPresenterTests: XCTestCase {
         sut.present(state: .Loading)
         XCTAssertEqual((pView.tableView as! TableViewSpy).reloadDataWasInvoked, 1)
     }
+    
+    func testHideTopSegmentMustShowTopTitleAndHideSegment() {
+        sut.hideTopSegment()
+        XCTAssertEqual(pView.setTopSegmentHiddenWasInvoked, 1)
+        XCTAssertEqual(pView.setTopTitleHiddenWasInvoked, 1)
+        XCTAssertEqual(pView.setTopSegmentHiddenValue, true)
+        XCTAssertEqual(pView.setTopTitleHiddenValue, false)
+    }
+    
+    func testHideTopSegmentMustHideFaveView() {
+        sut.hideTopSegment()
+        XCTAssertEqual(pView.setFaveViewHiddedWasInvoked, 1)
+        XCTAssertEqual(pView.setFaveViewHiddedValue, true)
+    }
+    
+    func testShowTopSegmentMustHideTopTitleAndShowSegment() {
+        sut.showTopSegment()
+        XCTAssertEqual(pView.setTopSegmentHiddenWasInvoked, 1)
+        XCTAssertEqual(pView.setTopTitleHiddenWasInvoked, 1)
+        XCTAssertEqual(pView.setTopSegmentHiddenValue, false)
+        XCTAssertEqual(pView.setTopTitleHiddenValue, true)
+    }
+    
+    func testSwitchToAllSegmentMustHideFaveView() {
+        sut.switchSegment(.All)
+        XCTAssertEqual(pView.setFaveViewHiddedWasInvoked, 1)
+        XCTAssertEqual(pView.setFaveViewHiddedValue, true)
+    }
+    
+    func testSwitchToFavoriteSegmentMustShowFaveView() {
+        sut.switchSegment(.Favorite)
+        XCTAssertEqual(pView.setFaveViewHiddedWasInvoked, 1)
+        XCTAssertEqual(pView.setFaveViewHiddedValue, false)
+    }
+    
+    func testFaveSectionCountMustReturn1IfArticlesExist() {
+        XCTAssertEqual(sut.faveSectionCount(), 1)
+    }
+    
+    func testFaveSectionCountMustReturn0IfNoArticles() {
+        faveStore.testArticles = []
+        XCTAssertEqual(sut.faveSectionCount(), 0)
+    }
+    
+    func testFaveCountMustReturnCountFromFaveSource() {
+        XCTAssertEqual(sut.faveCount(), 2)
+        faveStore.testArticles = []
+        XCTAssertEqual(sut.faveCount(), 0)
+    }
+    
+    func testPresentFaveMustConfigureCellFromFaveStore() {
+        let cell = CellSpy()
+        sut.presentFave(cell: cell, at: 0)
+        XCTAssertEqual(cell.savedTitle, "testtitle")
+        
+        sut.presentFave(cell: cell, at: 1)
+        XCTAssertEqual(cell.savedTitle, "testtitle1")
+    }
+    
+    func testReloadFavoriteMustInvokeViewsReload() {
+        sut.reloadFavorite()
+        XCTAssertEqual(pView.reloadFavoriteWasInvoked, 1)
+    }
 }
 extension NewsPresenterTests {
     class ViewSpy: PresenterView {
@@ -187,6 +259,33 @@ extension NewsPresenterTests {
             addRowsWasInvoked += 1
             addRows = rows
             addRowSection = section
+        }
+        func openActions(for cell: UITableViewCell) {}
+        
+        var setTopTitleHiddenWasInvoked = 0
+        var setTopTitleHiddenValue: Bool?
+        func setTopTitleHidden(_ isHidden: Bool) {
+            setTopTitleHiddenWasInvoked += 1
+            setTopTitleHiddenValue = isHidden
+        }
+        
+        var setTopSegmentHiddenWasInvoked = 0
+        var setTopSegmentHiddenValue: Bool?
+        func setTopSegmentHidden(_ isHidden: Bool) {
+            setTopSegmentHiddenWasInvoked += 1
+            setTopSegmentHiddenValue = isHidden
+        }
+        
+        var setFaveViewHiddedWasInvoked = 0
+        var setFaveViewHiddedValue: Bool?
+        func setFaveViewHidded(_ isHidden: Bool) {
+            setFaveViewHiddedWasInvoked += 1
+            setFaveViewHiddedValue = isHidden
+        }
+        
+        var reloadFavoriteWasInvoked = 0
+        func reloadFavorite() {
+            reloadFavoriteWasInvoked += 1
         }
     }
     class HeaderSpy: NewsHeaderProtocol {
@@ -236,6 +335,13 @@ extension NewsPresenterTests {
         func displayImage(from url: String) {
             savedUrl = url
             displayImageWasInvoked += 1
+        }
+        var actionOpener: CellsOpenActionProtocol?
+    }
+    class FaveStoreMock: FavoriteDataSourceProtocol {
+        var testArticles = [Article(author: "testauthor", title: "testtitle", desc: "testdesc", url: "testurl", urlToImage: "testurlToImage", publishedAt: "testpublishedAt"), Article(author: "testauthor1", title: "testtitle1", desc: "desc1", url: "testurl1", urlToImage: "testurlToImage1", publishedAt: "publishedAt1")]
+        var favorites: [Article] {
+            return testArticles
         }
     }
 }
